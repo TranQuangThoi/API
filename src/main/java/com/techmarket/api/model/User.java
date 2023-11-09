@@ -19,6 +19,7 @@ public class User extends Auditable<String>{
     @GeneratedValue(generator = "idGenerator")
     private Long id;
     private Date birthday;
+    private Integer gender;
     @OneToOne
     @JoinColumn(name = "account_id")
     private Account account;

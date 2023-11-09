@@ -3,4 +3,9 @@
     <changeSet author="QThoi (generated)" id="1699515335539-7">
         <dropColumn columnName="name" tableName="db_product_variant"/>
     </changeSet>
+    <changeSet author="QThoi (generated)" id="1699515335539-8">
+        <addColumn tableName="db_user">
+            <column name="gender" type="integer"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -8,4 +8,5 @@ public class UserAutoCompleteDto {
 
     private Long id;
     private AccountAutoCompleteDto accountAutoCompleteDto;
+    private Integer gender;
 }
