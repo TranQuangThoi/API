@@ -1,0 +1,283 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="QThoi (generated)" id="1699429613377-1">
+        <createTable tableName="db_address">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_addressPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="phone" type="VARCHAR(255)"/>
+            <column name="district_id" type="BIGINT"/>
+            <column name="province_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT"/>
+            <column name="ward_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-2">
+        <createTable tableName="db_brand">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_brandPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-3">
+        <createTable tableName="db_category">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_categoryPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="image" type="VARCHAR(255)"/>
+            <column name="kind" type="INT"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="ordering" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-4">
+        <createTable tableName="db_nation">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_nationPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kind" type="INT"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="post_code" type="VARCHAR(255)"/>
+            <column name="parent_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-5">
+        <createTable tableName="db_news">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_newsPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="avatar" type="VARCHAR(255)"/>
+            <column name="banner" type="VARCHAR(255)"/>
+            <column name="content" type="TEXT"/>
+            <column name="description" type="TEXT"/>
+            <column name="pin_top" type="INT"/>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-6">
+        <createTable tableName="db_product">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_productPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="image" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="price" type="DOUBLE PRECISION"/>
+            <column name="sale_off" type="DOUBLE PRECISION"/>
+            <column name="sold_amount" type="INT"/>
+            <column name="total_in_stock" type="INT"/>
+            <column name="total_review" type="INT"/>
+            <column name="brand_id" type="BIGINT"/>
+            <column name="category_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-7">
+        <createTable tableName="db_product_variant">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_product_variantPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="color" type="VARCHAR(255)"/>
+            <column name="image" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column defaultValueNumeric="0.0" name="price" type="DOUBLE"/>
+            <column name="total_stock" type="INT"/>
+            <column name="product_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-8">
+        <createTable tableName="db_settings">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_settingsPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="group_name" type="VARCHAR(255)"/>
+            <column name="is_editable" type="INT"/>
+            <column name="is_system" type="INT"/>
+            <column name="setting_key" type="VARCHAR(255)"/>
+            <column name="setting_value" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-9">
+        <createTable tableName="db_user">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_userPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="birthday" type="datetime"/>
+            <column name="account_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-10">
+        <addUniqueConstraint columnNames="setting_key" constraintName="UC_DB_SETTINGSSETTING_KEY_COL" tableName="db_settings"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-11">
+        <addForeignKeyConstraint baseColumnNames="ward_id" baseTableName="db_address" constraintName="FK1jhv31uki27ls81acg5pcne6n" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_nation" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-12">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="db_news" constraintName="FK57xiugnk361ftpunc91kp3he6" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_category" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-13">
+        <addForeignKeyConstraint baseColumnNames="district_id" baseTableName="db_address" constraintName="FKaee8y5eoxnig5uyl1s69d1xlf" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_nation" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-14">
+        <addForeignKeyConstraint baseColumnNames="province_id" baseTableName="db_address" constraintName="FKd4k4cs29amq6wrhubnrb4l41l" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_nation" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-15">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="db_user" constraintName="FKelwy3xhlg66g6qctshfc0edcm" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_account" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-16">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="db_product" constraintName="FKgwxeubvjb9i2wc842tn8yovch" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_category" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-17">
+        <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="db_nation" constraintName="FKoei4g69bmgd9jc1yvakfspb07" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_nation" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-18">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="db_product_variant" constraintName="FKoxo9ytyfvpnrcms41v9182koy" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_product" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-19">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="db_address" constraintName="FKpg84jpbwj170wnedgv6wchvmb" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_user" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699429613377-20">
+        <addForeignKeyConstraint baseColumnNames="brand_id" baseTableName="db_product" constraintName="FKtc23iqppsxyiikq5cv9omh2q3" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_brand" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
