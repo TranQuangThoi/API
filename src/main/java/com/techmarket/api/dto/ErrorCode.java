@@ -117,4 +117,12 @@ public class ErrorCode {
     public static final String PRODUCT_ERROR_NOT_FOUND = "ERROR-PRODUCT-0000";
     public static final String PRODUCT_ERROR_EXIST = "ERROR-PRODUCT-0001";
 
+    /**
+     * Starting error code PRODUCT_VARIANT_EROR
+     *
+     */
+
+    public static final String PRODUCT_VARIANT_ERROR_NOT_FOUND = "ERROR-PRODUCT-VARIANT-0000";
+    public static final String PRODUCT_VARIANT_ERROR_EXIST = "ERROR-PRODUCT-VARIANT-0001";
+
 }

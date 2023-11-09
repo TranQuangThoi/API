@@ -43,13 +43,12 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers( "/v1/customer/register").permitAll()
                 .antMatchers("/v1/service/detail/**").permitAll()
                 .antMatchers("/v1/product/**").permitAll()
-                .antMatchers("/v1/brand/**").permitAll()
+                .antMatchers("/v1/brand/**","/v1/product-variant/**").permitAll()
                 .antMatchers("/v1/user/login","/v1/user/signup").permitAll()
                 .antMatchers("/v1/account/request_forget_password", "/v1/account/forget_password").permitAll()
                 .antMatchers("/**").authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
-        http.addFilterBefore(jsonFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
 

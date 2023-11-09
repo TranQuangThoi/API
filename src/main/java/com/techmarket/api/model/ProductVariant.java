@@ -17,7 +17,6 @@ public class ProductVariant extends Auditable<String>{
     @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
     @GeneratedValue(generator = "idGenerator")
     private Long id;
-    private String name;
     @Column(columnDefinition = "DOUBLE DEFAULT 0")
     private Double price;
     private String color;
