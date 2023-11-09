@@ -1,6 +1,8 @@
 package com.techmarket.api.repository;
 
 import com.techmarket.api.model.Address;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,4 +26,6 @@ public interface AddressRepository extends JpaRepository<Address,Long>, JpaSpeci
     @Modifying
     @Query(value = "delete FROM db_address where user_id in (select id from db_user where account_id = :accountId)", nativeQuery = true)
     void deleteAllByAccountId(@Param("accountId") Long accountId);
+
+    Page<Address> findAllByUserId(Long id, Pageable pageable);
 }

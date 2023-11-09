@@ -29,7 +29,4 @@ public class UpdateAddressForm{
     @NotEmpty(message = "phone can not be empty")
     @ApiModelProperty(name = "phone", required = true)
     private String phone;
-    @NotNull(message = "status can not be null")
-    @ApiModelProperty(name = "status", required = true)
-    private Integer status;
 }

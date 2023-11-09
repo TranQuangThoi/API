@@ -6,6 +6,7 @@ import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.address.AddressAdminDto;
 import com.techmarket.api.dto.address.AddressDto;
+import com.techmarket.api.dto.user.UserDto;
 import com.techmarket.api.form.address.CreateAddressForm;
 import com.techmarket.api.form.address.UpdateAddressForm;
 import com.techmarket.api.mapper.AddressMapper;
@@ -16,10 +17,12 @@ import com.techmarket.api.model.criteria.AddressCriteria;
 import com.techmarket.api.repository.AddressRepository;
 import com.techmarket.api.repository.NationRepository;
 import com.techmarket.api.repository.UserRepository;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +48,6 @@ public class AddressController extends ABasicController {
         ApiMessageDto<ResponseListDto<List<AddressDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<AddressDto>> responseListDto = new ResponseListDto<>();
         Pageable pageable = PageRequest.of(0,10);
-        addressCriteria.setStatus(UserBaseConstant.STATUS_ACTIVE);
         Page<Address> addresses = addressRepository.findAll(addressCriteria.getSpecification(), pageable);
         List<AddressDto> addressAdminDtos = addressMapper.fromEntityToAddressDtoAutoCompleteList(addresses.getContent());
 
@@ -69,7 +71,6 @@ public class AddressController extends ABasicController {
         responseListDto.setContent(addressAdminDtos);
         responseListDto.setTotalPages(addresses.getTotalPages());
         responseListDto.setTotalElements(addresses.getTotalElements());
-
         apiMessageDto.setData(responseListDto);
         apiMessageDto.setMessage("Get list address success");
         return apiMessageDto;
@@ -118,7 +119,8 @@ public class AddressController extends ABasicController {
             apiMessageDto.setMessage("Province not found");
             return apiMessageDto;
         }
-        User user = userRepository.findById(createAddressForm.getUserId()).orElse(null);
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
         if (user == null){
             apiMessageDto.setResult(false);
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
@@ -194,4 +196,30 @@ public class AddressController extends ABasicController {
         apiMessageDto.setMessage("Delete address success");
         return apiMessageDto;
     }
+    @GetMapping(value = "/get-myAddress", produces= MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<AddressDto>>> getMyAddress()
+    {
+        ApiMessageDto<ResponseListDto<List<AddressDto>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<AddressDto>> responseListDto = new ResponseListDto<>();
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
+        if (user==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found user");
+            apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        Pageable pageable = PageRequest.of(0,10);
+        Page<Address> addresses = addressRepository.findAllByUserId(user.getId(), pageable);
+        List<AddressDto> addressDtoList = addressMapper.fromEntityToAddressDtoList(addresses.getContent());
+
+        responseListDto.setContent(addressDtoList);
+        responseListDto.setTotalPages(addresses.getTotalPages());
+        responseListDto.setTotalElements(addresses.getTotalElements());
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("get my address success");
+        return apiMessageDto;
+    }
+
 }

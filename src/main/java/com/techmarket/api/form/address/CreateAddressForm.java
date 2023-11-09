@@ -26,10 +26,5 @@ public class CreateAddressForm {
     @NotEmpty(message = "phone can not be empty")
     @ApiModelProperty(name = "phone", required = true)
     private String phone;
-    @NotNull(message = "status can not be null")
-    @ApiModelProperty(name = "status", required = true)
-    private Integer status;
-    @NotNull(message = "userId can not be null")
-    @ApiModelProperty(name = "userId", required = true)
-    private Long userId;
+
 }
