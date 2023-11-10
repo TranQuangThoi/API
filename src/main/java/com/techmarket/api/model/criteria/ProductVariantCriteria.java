@@ -47,9 +47,8 @@ public class ProductVariantCriteria {
                 {
                     predicates.add(cb.equal(root.get("price"),getPrice()));
                 }
-                if(getTotalInStock()!=null)
-                {
-                    predicates.add(cb.equal(root.get("totalStock"),getTotalInStock()));
+                if (getTotalInStock() != null) {
+                    predicates.add(cb.greaterThan(root.get("totalStock"), 0));
                 }
                 if(getProductId()!=null)
                 {
