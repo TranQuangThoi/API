@@ -1,5 +1,7 @@
 package com.techmarket.api.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.techmarket.api.constant.UserBaseConstant;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
@@ -31,6 +33,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -296,11 +299,41 @@ public class UserController extends ABasicController{
         {
             user.setBirthday(updateMyprofile.getBirthday());
         }
-
+        if (updateMyprofile.getGender()!=null)
+        {
+            user.setGender(updateMyprofile.getGender());
+        }
         accountMapper.fromUpdateMyProfileToEntity(updateMyprofile,account);
         accountRepository.save(account);
         userRepository.save(user);
         apiMessageDto.setMessage("update myprofile success");
+        return apiMessageDto;
+    }
+
+    @GetMapping(value = "/get-myprofile", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<UserDto> getMyProfile()
+    {
+        ApiMessageDto<UserDto> apiMessageDto = new ApiMessageDto<>();
+        Long accountId = getCurrentUser();
+
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("account not found");
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        User user = userRepository.findByAccountId(accountId).orElse(null);
+        if (user==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("user not found");
+            apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        apiMessageDto.setData(userMapper.fromEntityToUserDto(user));
+        apiMessageDto.setMessage("get profile success");
         return apiMessageDto;
     }
 

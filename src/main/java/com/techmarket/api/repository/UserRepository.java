@@ -10,8 +10,6 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificationExecutor<User> {
 
-//    User findUsersByPhone(String phone);
-//    User findUsersByEmail(String email);
     Optional<User> findByAccountId(Long accountId);
     @Transactional
     @Modifying

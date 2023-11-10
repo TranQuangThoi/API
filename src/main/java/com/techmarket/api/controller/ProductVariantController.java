@@ -82,7 +82,8 @@ public class ProductVariantController extends ABasicController{
         ApiMessageDto<ResponseListDto<List<ProductVariantDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<ProductVariantDto>> responseListDto = new ResponseListDto<>();
         productVariantCriteria.setStatus(UserBaseConstant.STATUS_ACTIVE);
-        Pageable pageable = PageRequest.of(0,10);
+        productVariantCriteria.setTotalInStock(UserBaseConstant.STATUS_ACTIVE);
+        Pageable pageable = PageRequest.of(0,20);
         Page<ProductVariant> listProduct = productVariantRepository.findAll(productVariantCriteria.getSpecification(),pageable);
         responseListDto.setContent(productVariantMapper.fromEntityToListProVariantAutoDto(listProduct.getContent()));
         responseListDto.setTotalPages(listProduct.getTotalPages());

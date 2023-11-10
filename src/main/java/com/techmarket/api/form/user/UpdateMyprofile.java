@@ -1,5 +1,6 @@
 package com.techmarket.api.form.user;
 
+import com.techmarket.api.validation.GenderKind;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -28,4 +29,7 @@ public class UpdateMyprofile {
     private String oldPassword;
     @ApiModelProperty(name = "avatarPath")
     private String avatarPath;
+    @ApiModelProperty(name = "gender")
+    @GenderKind
+    private Integer gender;
 }

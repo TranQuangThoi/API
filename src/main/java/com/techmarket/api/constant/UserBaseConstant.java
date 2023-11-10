@@ -28,6 +28,13 @@ public class UserBaseConstant {
     public static final Integer MAX_ATTEMPT_LOGIN = 5;
 
     public static final Integer CATEGORY_KIND_NEWS = 1;
+    public static final Integer CATEGORY_KIND_PRODUCT = 2;
+
+
+    public static final Integer GENDER_KIND_MALE = 0;
+    public static final Integer GENDER_KIND_FEMALE = 1;
+    public static final Integer GENDER_KIND_OTHER = 2;
+
 
     private UserBaseConstant(){
         throw new IllegalStateException("Utility class");
