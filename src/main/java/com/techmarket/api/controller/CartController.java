@@ -4,7 +4,6 @@ import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
-import com.techmarket.api.mapper.ProductVariantMapper;
 import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.repository.ProductVariantRepository;
 
@@ -71,7 +70,7 @@ public class CartController {
                     productVariant.getProduct().getName(),productVariant.getColor(),productVariant.getProduct().getImage()));
         }
 
-        saveCartInCookie(response,cartItems);
+        saveCartInCookie(request,response,cartItems);
         apiMessageDto.setMessage("Product added to cart success");
         return apiMessageDto;
 
@@ -86,7 +85,6 @@ public class CartController {
                     try {
                         String decodedValue = URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
                         String[] items = decodedValue.split(",");
-
                         for (String item : items) {
                             String[] parts = item.split(":");
                             Long productId = Long.parseLong(parts[0]);
@@ -107,7 +105,55 @@ public class CartController {
 
         return cartItems;
     }
-    private void saveCartInCookie(HttpServletResponse response, List<CartDto> cartItems) {
+
+    @DeleteMapping("/delete/{productVariantId}")
+    public ApiMessageDto<String> removeFromCart(@PathVariable Long productVariantId, HttpServletRequest request, HttpServletResponse response) {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        List<CartDto> cartItems = getCartItemsFromCookie(request);
+
+        Optional<CartDto> existingItem = cartItems.stream()
+                .filter(item -> item.getProductVariantId().equals(productVariantId))
+                .findFirst();
+
+        if (existingItem.isPresent()) {
+            cartItems.remove(existingItem.get());
+            saveCartInCookie(request,response, cartItems);
+            apiMessageDto.setMessage("Product removed from cart successfully");
+        } else {
+            apiMessageDto.setMessage("Product not found in cart");
+            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+        }
+
+        return apiMessageDto;
+    }
+    @PutMapping("/update/{productVariantId}")
+    public ApiMessageDto<String> updateCartItemQuantity(@PathVariable Long productVariantId, @RequestParam int quantity, HttpServletRequest request, HttpServletResponse response) {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        List<CartDto> cartItems = getCartItemsFromCookie(request);
+
+        Optional<CartDto> existingItem = cartItems.stream()
+                .filter(item -> item.getProductVariantId().equals(productVariantId))
+                .findFirst();
+
+        if (existingItem.isPresent()) {
+
+            ProductVariant productVariant = productVariantRepository.findById(productVariantId).orElse(null);
+            if (productVariant.getTotalStock()<= quantity)
+            {
+                apiMessageDto.setMessage("Số lượng hàng trong kho không đủ");
+                return apiMessageDto;
+            }
+            existingItem.get().setQuantity(quantity);
+            existingItem.get().setPrice(existingItem.get().getQuantity() * existingItem.get().getPrice());
+            saveCartInCookie(request,response, cartItems);
+            apiMessageDto.setMessage("Cart item quantity updated successfully");
+        } else {
+            apiMessageDto.setMessage("Product not found in cart");
+            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+        }
+        return apiMessageDto;
+    }
+    private void saveCartInCookie(HttpServletRequest request ,HttpServletResponse response, List<CartDto> cartItems) {
         List<String> cartItemStrings = new ArrayList<>();
         for (CartDto cartItem : cartItems) {
             cartItemStrings.add(cartItem.getProductVariantId() + ":" + cartItem.getQuantity() + ":" +cartItem.getPrice() +":"
@@ -115,12 +161,30 @@ public class CartController {
         }
 
         String encodedCartValue = String.join(",", cartItemStrings);
-
         //  để mã hóa giá trị của Cookie, đảm bảo rằng các ký tự đặc biệt như dấu , được mã hóa đúng cách  -> %c2 thay cho dấu ,
         String encodedCookieValue = URLEncoder.encode(encodedCartValue, StandardCharsets.UTF_8);
 
-        Cookie cookie = new Cookie("cart", encodedCookieValue);
-        cookie.setMaxAge(30 * 24 * 60 * 60); // Expire in 30 days
-        response.addCookie(cookie);
+        Cookie[] existingCookies = request.getCookies();
+        boolean cookieExists = false;
+
+        if (existingCookies != null) {
+            for (Cookie existingCookie : existingCookies) {
+                if ("cart".equals(existingCookie.getName())) {
+                    // Nếu có cookie đã tồn tại, chỉ cập nhật giá trị
+                    encodedCookieValue = URLEncoder.encode(encodedCartValue, StandardCharsets.UTF_8);
+                    existingCookie.setValue(encodedCookieValue);
+                    existingCookie.setMaxAge(30 * 24 * 60 * 60);
+                    response.addCookie(existingCookie);
+                    cookieExists = true;
+                    break;
+                }
+            }
+        }
+
+        if (!cookieExists) {
+            Cookie cookie = new Cookie("cart", encodedCookieValue);
+            cookie.setMaxAge(7 * 24 * 60 * 60);
+            response.addCookie(cookie);
+        }
     }
 }
