@@ -22,12 +22,13 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/v1/cart")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CartController {
 
     @Autowired
     private ProductVariantRepository productVariantRepository;
 
-    @GetMapping("/get")
+    @GetMapping("/")
     public ApiMessageDto<ResponseListDto<List<CartDto>>> viewCart(HttpServletRequest request) {
         List<CartDto> cartItems = getCartItemsFromCookie(request);
         ApiMessageDto<ResponseListDto<List<CartDto>>> apiMessageDto = new ApiMessageDto<>();
@@ -38,8 +39,8 @@ public class CartController {
         apiMessageDto.setMessage("get cart success");
         return apiMessageDto;
     }
-    @PostMapping("/add/{productVariantId}")
-    public ApiMessageDto<String> addToCart(@PathVariable Long productVariantId, @RequestParam int quantity, HttpServletRequest request, HttpServletResponse response) {
+    @PostMapping("/")
+    public ApiMessageDto<String> addToCart(@RequestParam Long productVariantId, @RequestParam int quantity, HttpServletRequest request, HttpServletResponse response) {
 
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         List<CartDto> cartItems = getCartItemsFromCookie(request);
@@ -106,8 +107,8 @@ public class CartController {
         return cartItems;
     }
 
-    @DeleteMapping("/delete/{productVariantId}")
-    public ApiMessageDto<String> removeFromCart(@PathVariable Long productVariantId, HttpServletRequest request, HttpServletResponse response) {
+    @DeleteMapping("/")
+    public ApiMessageDto<String> removeFromCart(@RequestParam Long productVariantId, HttpServletRequest request, HttpServletResponse response) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         List<CartDto> cartItems = getCartItemsFromCookie(request);
 
@@ -126,8 +127,8 @@ public class CartController {
 
         return apiMessageDto;
     }
-    @PutMapping("/update/{productVariantId}")
-    public ApiMessageDto<String> updateCartItemQuantity(@PathVariable Long productVariantId, @RequestParam int quantity, HttpServletRequest request, HttpServletResponse response) {
+    @PutMapping("/")
+    public ApiMessageDto<String> updateCartItemQuantity(@RequestParam Long productVariantId, @RequestParam int quantity, HttpServletRequest request, HttpServletResponse response) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         List<CartDto> cartItems = getCartItemsFromCookie(request);
 
