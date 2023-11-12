@@ -5,7 +5,9 @@ import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
+import com.techmarket.api.model.Product;
 import com.techmarket.api.model.ProductVariant;
+import com.techmarket.api.repository.ProductRepository;
 import com.techmarket.api.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/v1/cart")
+@RequestMapping("/v1")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CartController {
 
@@ -23,6 +25,8 @@ public class CartController {
     private ProductVariantRepository productVariantRepository;
     @Autowired
     private cookie cookie;
+    @Autowired
+    private ProductRepository productRepository;
 
     @GetMapping("/")
     public ApiMessageDto<ResponseListDto<List<CartDto>>> viewCart(HttpServletRequest request) {
@@ -49,8 +53,9 @@ public class CartController {
             return apiMessageDto;
         }
         Double price ;
-        if (productVariant.getPrice()!=null)
+        if (productVariant.getPrice()!=null && productVariant.getPrice()!=0)
         {
+
             price=productVariant.getPrice();
         }else {
             price=productVariant.getProduct().getPrice();
@@ -118,8 +123,16 @@ public class CartController {
                 apiMessageDto.setMessage("Số lượng hàng trong kho không đủ");
                 return apiMessageDto;
             }
+            Product product = productRepository.findById(productVariant.getProduct().getId()).orElse(null);
+            Double price=0.0;
+            if (productVariant.getPrice()!=null && productVariant.getPrice()!=0)
+            {
+                price = productVariant.getPrice() * quantity;
+            }else {
+                price = product.getPrice() * quantity;
+            }
             existingItem.get().setQuantity(quantity);
-            existingItem.get().setPrice(existingItem.get().getQuantity() * existingItem.get().getPrice());
+            existingItem.get().setPrice(price);
             cookie.saveCartInCookie(request,response, cartItems);
             apiMessageDto.setMessage("Cart item quantity updated successfully");
         } else {
@@ -128,5 +141,6 @@ public class CartController {
         }
         return apiMessageDto;
     }
+
 
 }

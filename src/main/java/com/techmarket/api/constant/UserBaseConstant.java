@@ -10,7 +10,7 @@ public class UserBaseConstant {
     public static final Integer USER_KIND_MANAGER = 2;
     public static final Integer USER_KIND_USER = 3;
 
-    public static final Integer STATUS_IS_PAID= 2;
+    public static final Integer STATUS_CANCEL = 2;
     public static final Integer STATUS_ACTIVE = 1;
     public static final Integer STATUS_PENDING = 0;
     public static final Integer STATUS_LOCK = -1;

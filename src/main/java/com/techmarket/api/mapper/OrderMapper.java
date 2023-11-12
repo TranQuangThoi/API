@@ -2,8 +2,11 @@ package com.techmarket.api.mapper;
 
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.form.order.CreateOrderForm;
+import com.techmarket.api.form.order.UpdateOrder;
+import com.techmarket.api.form.product.UpdateProductForm;
 import com.techmarket.api.model.Order;
 
+import com.techmarket.api.model.Product;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -38,6 +41,7 @@ public interface OrderMapper {
     @Mapping(source = "user.id",target = "userId")
     @Mapping(source = "isPaid",target = "isPaid")
     @Mapping(source = "isDelivery",target = "isDelivery")
+    @Mapping(source = "status",target = "status")
     @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
     @Named("fromOrderToDto")
     @BeanMapping(ignoreByDefault = true)
@@ -46,6 +50,13 @@ public interface OrderMapper {
     @BeanMapping(ignoreByDefault = true)
     @IterableMapping(elementTargetType = OrderDto.class,qualifiedByName = "fromOrderToDto")
     List<OrderDto> fromEntityToListOrderDto(List<Order> orders);
+
+    @Mapping(source = "isPaid",target = "isPaid")
+    @Mapping(source = "isDelivery",target = "isDelivery")
+    @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
+    @Mapping(source = "status",target = "status")
+    @BeanMapping(ignoreByDefault = true)
+    void fromUpdateToOrderEntity(UpdateOrder updateOrder, @MappingTarget Order order);
 
 
 }

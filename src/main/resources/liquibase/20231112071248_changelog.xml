@@ -15,4 +15,9 @@
             <column name="expected_delivery_date" type="datetime"/>
         </addColumn>
     </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-4">
+        <addColumn tableName="db_order_detail">
+            <column name="price" type="double precision"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

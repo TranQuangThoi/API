@@ -1,24 +1,27 @@
 package com.techmarket.api.controller;
 
+import com.techmarket.api.constant.UserBaseConstant;
+import com.techmarket.api.cookie.cookie;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
+import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.OrderDto;
-import com.techmarket.api.dto.product.ProductDto;
+import com.techmarket.api.form.order.CreateOrderForm;
+import com.techmarket.api.form.order.UpdateOrder;
 import com.techmarket.api.mapper.OrderMapper;
-import com.techmarket.api.model.Order;
-import com.techmarket.api.model.Product;
-import com.techmarket.api.model.User;
+import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
-import com.techmarket.api.repository.OrderRepository;
-import com.techmarket.api.repository.UserRepository;
+import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -33,6 +36,14 @@ public class OrderController extends ABasicController{
     private OrderMapper orderMapper;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private cookie cookie;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -97,12 +108,31 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
-//    @GetMapping(value = "/update-status", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/update-Order", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PreAuthorize("hasRole('PR_V')")
+    public ApiMessageDto<String> updateOrder(@Valid @RequestBody UpdateOrder updateOrder ,BindingResult bindingResult) {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+
+        Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
+        if (order ==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+
+        orderMapper.fromUpdateToOrderEntity(updateOrder,order);
+        orderRepository.save(order);
+        apiMessageDto.setMessage("update status success");
+        return apiMessageDto;
+    }
+//    @PutMapping(value = "/update-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
 ////    @PreAuthorize("hasRole('PR_V')")
-//    public ApiMessageDto<String> updateOrder(@PathVariable("id") Long id) {
+//    public ApiMessageDto<String> updateMyOrder(@Valid @RequestBody UpdateMyOrderForm updateMyOrder , BindingResult bindingResult) {
 //        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
 //
-//        Order order = orderRepository.findById(id).orElse(null);
+//        Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
 //        if (order ==null)
 //        {
 //            apiMessageDto.setResult(false);
@@ -111,7 +141,62 @@ public class OrderController extends ABasicController{
 //            return apiMessageDto;
 //        }
 //
-//
+//        orderMapper.fromUpdateToOrderEntity(updateOrder,order);
+//        orderRepository.save(order);
+//        apiMessageDto.setMessage("update status success");
+//        return apiMessageDto;
 //    }
+    @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
+            , HttpServletRequest request , HttpServletResponse response)
+    {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        List<CartDto> cartItems = cookie.getCartItemsFromCookie(request);
+
+        Order order = orderMapper.fromCreateOrderToEntity(createOrderForm);
+        order.setStatus(UserBaseConstant.STATUS_PENDING);
+
+        String tokenExist = getCurrentToken();
+        if (tokenExist!=null)
+        {
+            Long accountId = getCurrentUser();
+            if (accountId!=null)
+            {
+                User user = userRepository.findByAccountId(accountId).orElse(null);
+                if (user!=null)
+                {
+                    order.setUser(user);
+                }
+            }
+        }
+        orderRepository.save(order);
+        Double totalPrice=0.0;
+        for (CartDto item : cartItems)
+        {
+
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(order);
+
+            ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
+            if (productVariant==null)
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("Not found product variant");
+                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                return apiMessageDto;
+            }
+            orderDetail.setProductVariant(productVariant);
+            orderDetail.setAmount(item.getQuantity());
+            orderDetail.setPrice(item.getPrice());
+            orderDetailRepository.save(orderDetail);
+            totalPrice += item.getPrice();
+        }
+        order.setTotalMoney(totalPrice);
+        orderRepository.save(order);
+        cookie.clearCartCookie(request,response);
+        apiMessageDto.setMessage("create order success");
+        return apiMessageDto;
+    }
+
 
 }

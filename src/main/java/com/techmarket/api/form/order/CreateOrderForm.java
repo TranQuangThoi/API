@@ -29,15 +29,9 @@ public class CreateOrderForm {
     @NotEmpty(message = "address detail can not be empty")
     @ApiModelProperty(name = "address detail", required = true)
     private String address;
-    @NotEmpty(message = "payment method can not be empty")
+    @NotNull(message = "payment method can not be empty")
     @ApiModelProperty(name = "payment method", required = true)
     private Integer paymentMethod;
-    @NotNull(message = "productVariantId can not be null")
-    @ApiModelProperty(name = "productVariantId", required = true)
-    private Long provariantId;
-    @NotNull(message = "amount can not be null")
-    @ApiModelProperty(name = "amount", required = true)
-    private Integer amount;
     @ApiModelProperty(name = "note")
     private String note;
 

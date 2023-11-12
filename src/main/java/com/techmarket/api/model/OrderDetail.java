@@ -28,6 +28,7 @@ public class OrderDetail extends Auditable<String>{
     private ProductVariant productVariant;
 
     private Integer amount;
+    private Double price;
 
 
 }

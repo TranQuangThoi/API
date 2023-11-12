@@ -17,7 +17,15 @@ public class UpdateOrder {
     @ApiModelProperty(name = "status", required = true)
     private Integer status;
 
-    @NotNull(message = "expect receive date can not be null")
-    @ApiModelProperty(name = "expect receive dat", required = true)
-    private Date expectedReveiveDate;
+    @ApiModelProperty(name = "expect receive date")
+    private Date expectedDeliveryDate;
+
+    @NotNull(message = " is Delivery not be null")
+    @ApiModelProperty(name = "isDelivery", required = true)
+    private Boolean isDelivery;
+
+    @NotNull(message = " is Paid not be null")
+    @ApiModelProperty(name = "isPaid", required = true)
+    private Boolean isPaid;
+
 }
