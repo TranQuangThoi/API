@@ -1,0 +1,101 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="QThoi (generated)" id="1699765094348-1">
+        <createTable tableName="db_order">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_orderPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(255)"/>
+            <column name="district" type="VARCHAR(255)"/>
+            <column name="note" type="TEXT"/>
+            <column name="payment_method" type="INT"/>
+            <column name="phone" type="VARCHAR(255)"/>
+            <column name="province" type="VARCHAR(255)"/>
+            <column name="receiver" type="VARCHAR(255)"/>
+            <column name="total_money" type="DOUBLE PRECISION"/>
+            <column name="ward" type="VARCHAR(255)"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-2">
+        <createTable tableName="db_order_detail">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_order_detailPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="INT"/>
+            <column name="order_id" type="BIGINT"/>
+            <column name="product_variant_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-3">
+        <createTable tableName="db_review">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="db_reviewPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="TEXT"/>
+            <column name="star" type="INT"/>
+            <column name="product_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-4">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="db_order" constraintName="FK56lr6sr0r0nyh156i6gv2hh1d" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_user" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-5">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="db_review" constraintName="FK5abas2br9fow10lmok7v7h0pb" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_user" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-6">
+        <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="db_order_detail" constraintName="FKe494422y1natb0ql7w4knid4" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_order" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-7">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="db_review" constraintName="FKitmjv097kpkqr7hasdd824g6m" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_product" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699765094348-8">
+        <addForeignKeyConstraint baseColumnNames="product_variant_id" baseTableName="db_order_detail" constraintName="FKog14efbfwlbcie6bmopqwrly7" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_product_variant" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

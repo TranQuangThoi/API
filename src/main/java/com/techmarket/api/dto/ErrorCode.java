@@ -110,7 +110,7 @@ public class ErrorCode {
     public static final String BRAND_ERROR_NAME_EXIST = "ERROR-BRAND-0002";
 
     /**
-     * Starting error code PRODUCT_EROR
+     * Starting error code PRODUCT_ERROR
      *
      */
 
@@ -118,11 +118,19 @@ public class ErrorCode {
     public static final String PRODUCT_ERROR_EXIST = "ERROR-PRODUCT-0001";
 
     /**
-     * Starting error code PRODUCT_VARIANT_EROR
+     * Starting error code PRODUCT_VARIANT_ERROR
      *
      */
 
     public static final String PRODUCT_VARIANT_ERROR_NOT_FOUND = "ERROR-PRODUCT-VARIANT-0000";
     public static final String PRODUCT_VARIANT_ERROR_EXIST = "ERROR-PRODUCT-VARIANT-0001";
+
+    /**
+     * Starting error code ORDER_ERROR
+     *
+     */
+
+    public static final String ORDER_ERROR_NOT_FOUND = "ERROR-ORDER-0000";
+
 
 }
