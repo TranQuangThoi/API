@@ -8,6 +8,7 @@ import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.form.order.CreateOrderForm;
+import com.techmarket.api.form.order.UpdateMyOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
 import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
@@ -44,6 +45,8 @@ public class OrderController extends ABasicController{
     private OrderDetailRepository orderDetailRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -127,25 +130,25 @@ public class OrderController extends ABasicController{
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;
     }
-//    @PutMapping(value = "/update-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
-////    @PreAuthorize("hasRole('PR_V')")
-//    public ApiMessageDto<String> updateMyOrder(@Valid @RequestBody UpdateMyOrderForm updateMyOrder , BindingResult bindingResult) {
-//        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
-//
-//        Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
-//        if (order ==null)
-//        {
-//            apiMessageDto.setResult(false);
-//            apiMessageDto.setMessage("Not found order");
-//            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
-//            return apiMessageDto;
-//        }
-//
-//        orderMapper.fromUpdateToOrderEntity(updateOrder,order);
-//        orderRepository.save(order);
-//        apiMessageDto.setMessage("update status success");
-//        return apiMessageDto;
-//    }
+    @PutMapping(value = "/update-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PreAuthorize("hasRole('PR_V')")
+    public ApiMessageDto<String> updateMyOrder(@Valid @RequestBody UpdateMyOrderForm updateOrder , BindingResult bindingResult) {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+
+        Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
+        if (order ==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+
+//        if (updateOrder.getStatus().equals(UserBaseConstant))
+        orderRepository.save(order);
+        apiMessageDto.setMessage("update status success");
+        return apiMessageDto;
+    }
     @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
             , HttpServletRequest request , HttpServletResponse response)
@@ -153,8 +156,15 @@ public class OrderController extends ABasicController{
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         List<CartDto> cartItems = cookie.getCartItemsFromCookie(request);
 
+        if (cartItems.size()==0)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Hiện không có sản phẩm nào trong giỏ hàng !!!");
+            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
         Order order = orderMapper.fromCreateOrderToEntity(createOrderForm);
-        order.setStatus(UserBaseConstant.STATUS_PENDING);
+        order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
 
         String tokenExist = getCurrentToken();
         if (tokenExist!=null)
@@ -163,10 +173,14 @@ public class OrderController extends ABasicController{
             if (accountId!=null)
             {
                 User user = userRepository.findByAccountId(accountId).orElse(null);
-                if (user!=null)
+                if (user==null)
                 {
-                    order.setUser(user);
+                    apiMessageDto.setResult(false);
+                    apiMessageDto.setMessage("Not found user");
+                    apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+                    return apiMessageDto;
                 }
+                order.setUser(user);
             }
         }
         orderRepository.save(order);
@@ -178,25 +192,41 @@ public class OrderController extends ABasicController{
             orderDetail.setOrder(order);
 
             ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
-            if (productVariant==null)
+            if (productVariant.getTotalStock().equals(0))
             {
                 apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("Not found product variant");
+                apiMessageDto.setMessage("Product variant sold out");
                 apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
                 return apiMessageDto;
             }
-            orderDetail.setProductVariant(productVariant);
+            if(productVariant.getTotalStock() < item.getQuantity())
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("product quantity has been exceeded ,Please reduce product quantity");
+                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                return apiMessageDto;
+            }
+            orderDetail.setProductVariantId(productVariant.getId());
             orderDetail.setAmount(item.getQuantity());
             orderDetail.setPrice(item.getPrice());
             orderDetailRepository.save(orderDetail);
             totalPrice += item.getPrice();
+
+            productVariant.setTotalStock(productVariant.getTotalStock() -item.getQuantity());
+            productVariantRepository.save(productVariant);
+            Product product = productRepository.findById(productVariant.getProduct().getId()).orElse(null);
+            product.setSoldAmount(product.getSoldAmount() + item.getQuantity());
+            product.setTotalInStock(product.getTotalInStock() - item.getQuantity());
+            productRepository.save(product);
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
+
         cookie.clearCartCookie(request,response);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;
     }
+
 
 
 }

@@ -19,7 +19,8 @@ public class CreateProductVariantForm {
     private String color;
     @ApiModelProperty(name = "image")
     private String image;
-    @ApiModelProperty(name = "totalStock")
+    @NotNull(message = "amount cant not be empty")
+    @ApiModelProperty(name = "amount",required = true)
     private Integer totalStock;
     @NotNull(message = "productId cant not be empty")
     @ApiModelProperty(name = "productId", required = true)

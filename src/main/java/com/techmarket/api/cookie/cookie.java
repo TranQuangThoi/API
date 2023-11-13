@@ -87,6 +87,8 @@ public class cookie {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("cart".equals(cookie.getName())) {
+                    cookie.setValue("");
+                    cookie.setPath("/v1");
                     cookie.setMaxAge(0);
                     response.addCookie(cookie);
                     break;

@@ -22,10 +22,10 @@ public class Product extends Auditable<String>{
     @Column(name = "description", columnDefinition = "text")
     private String description;
     private String image;
-    private Integer totalInStock;
-    private Integer totalReview;
+    private Integer totalInStock=0;
+    private Integer totalReview=0;
     private Double saleOff;
-    private Integer soldAmount;
+    private Integer soldAmount=0;
 
     @ManyToOne
     @JoinColumn(name = "brand_id")

@@ -20,4 +20,12 @@
             <column name="price" type="double precision"/>
         </addColumn>
     </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-5">
+        <addColumn tableName="db_order">
+            <column name="state" type="INT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-6">
+        <dropForeignKeyConstraint baseTableName="db_order_detail" constraintName="FKog14efbfwlbcie6bmopqwrly7"/>
+    </changeSet>
 </databaseChangeLog>

@@ -3,10 +3,8 @@ package com.techmarket.api.mapper;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.form.order.CreateOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
-import com.techmarket.api.form.product.UpdateProductForm;
 import com.techmarket.api.model.Order;
 
-import com.techmarket.api.model.Product;
 import org.mapstruct.*;
 
 import java.util.List;

@@ -134,6 +134,8 @@ public class ProductVariantController extends ABasicController{
         ProductVariant productVariant = productVariantMapper.fromCreateProVariantToEntity(createProductVariantForm);
         productVariant.setProduct(productExist);
         productVariantRepository.save(productVariant);
+        productExist.setTotalInStock(productExist.getTotalInStock() + productVariant.getTotalStock());
+        productRepository.save(productExist);
         apiMessageDto.setMessage("create product success");
         return apiMessageDto;
     }
@@ -174,6 +176,12 @@ public class ProductVariantController extends ABasicController{
         if (updateProductVariantForm.getPrice()==null)
         {
             productVariant.setPrice(0.0);
+        }
+        if (!productVariant.getTotalStock().equals(updateProductVariantForm.getTotalStock()))
+        {
+            Integer totalInStock = (productExist.getTotalInStock()-productVariant.getTotalStock())+ updateProductVariantForm.getTotalStock();
+            productVariant.setTotalStock(updateProductVariantForm.getTotalStock());
+            productExist.setTotalInStock(totalInStock);
         }
         productVariantMapper.fromUpdateToEntityProViant(updateProductVariantForm,productVariant);
         productVariant.setProduct(productExist);

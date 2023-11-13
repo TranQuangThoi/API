@@ -57,7 +57,6 @@ public interface ProductVariantMapper {
     @Mapping(source = "price", target = "price")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "color", target = "color")
-    @Mapping(source = "totalStock", target = "totalStock")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateToEntityProViant(UpdateProductVariantForm updateProductVariantForm, @MappingTarget ProductVariant productVariant);
 

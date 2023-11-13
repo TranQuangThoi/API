@@ -1,5 +1,6 @@
 package com.techmarket.api.form.order;
 
+import com.techmarket.api.validation.PaymentKind;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class CreateOrderForm {
     private String address;
     @NotNull(message = "payment method can not be empty")
     @ApiModelProperty(name = "payment method", required = true)
+    @PaymentKind
     private Integer paymentMethod;
     @ApiModelProperty(name = "note")
     private String note;

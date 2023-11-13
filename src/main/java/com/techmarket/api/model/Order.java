@@ -24,7 +24,7 @@ public class Order extends Auditable<String>{
     private User user;
 
     @Column(name = "total_money")
-    private Double totalMoney;
+    private Double totalMoney =0.0;
 
     @Column(name = "payment_method")
     private Integer paymentMethod;
@@ -43,5 +43,6 @@ public class Order extends Auditable<String>{
     private Boolean isPaid=false;
     @Column(name = "is_delivery")
     private Boolean isDelivery=false;
+    private Integer state;
 
 }
