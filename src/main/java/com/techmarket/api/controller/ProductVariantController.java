@@ -59,7 +59,7 @@ public class ProductVariantController extends ABasicController{
     }
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('PROV_V')")
-    public ApiMessageDto<ProductVariantDto> getProduct(@PathVariable("id") Long id) {
+    public ApiMessageDto<ProductVariantDto> getProductVariant(@PathVariable("id") Long id) {
 
         ApiMessageDto<ProductVariantDto> apiMessageDto = new ApiMessageDto<>();
         ProductVariant productVariant = productVariantRepository.findById(id).orElse(null);
@@ -76,7 +76,20 @@ public class ProductVariantController extends ABasicController{
         apiMessageDto.setMessage("Get product variant success.");
         return  apiMessageDto;
     }
+    @GetMapping(value = "/get-by-product/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<ProductVariantDto>>> getProVariantByPro(@PathVariable("id") Long id ,Pageable pageable) {
 
+        ApiMessageDto<ResponseListDto<List<ProductVariantDto>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<ProductVariantDto>> responseListDto = new ResponseListDto<>();
+        Page<ProductVariant> productVariant = productVariantRepository.findAllByProductId(id,pageable);
+
+        responseListDto.setContent(productVariantMapper.fromEntityToListProVariantDto(productVariant.getContent()));
+        responseListDto.setTotalPages(productVariant.getTotalPages());
+        responseListDto.setTotalElements(productVariant.getTotalElements());
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("Get product variant success.");
+        return  apiMessageDto;
+    }
     @GetMapping(value = "/auto-complete",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ProductVariantDto>>> ListAutoComplete(ProductVariantCriteria productVariantCriteria)
     {

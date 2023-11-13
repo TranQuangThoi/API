@@ -44,6 +44,13 @@ public class ABasicController {
         }
         return false;
     }
+    public boolean isUser(){
+        UserBaseJwt userBaseJwt = userService.getAddInfoFromToken();
+        if(userBaseJwt !=null){
+            return Objects.equals(userBaseJwt.getUserKind(), UserBaseConstant.USER_KIND_USER);
+        }
+        return false;
+    }
 
     public String getCurrentToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -23,9 +23,10 @@ public class OrderDetail extends Auditable<String>{
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @JoinColumn(name = "product_variant_id")
+    @Column(name = "product_variant_id")
     private Long productVariantId;
-
+    private String name;
+    private String color;
     private Integer amount;
     private Double price;
 

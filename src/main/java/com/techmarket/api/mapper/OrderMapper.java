@@ -49,10 +49,10 @@ public interface OrderMapper {
     @IterableMapping(elementTargetType = OrderDto.class,qualifiedByName = "fromOrderToDto")
     List<OrderDto> fromEntityToListOrderDto(List<Order> orders);
 
-    @Mapping(source = "isPaid",target = "isPaid")
     @Mapping(source = "isDelivery",target = "isDelivery")
     @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
-    @Mapping(source = "status",target = "status")
+    @Mapping(source = "state",target = "state")
+    @Mapping(source = "isPaid",target = "isPaid")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateToOrderEntity(UpdateOrder updateOrder, @MappingTarget Order order);
 

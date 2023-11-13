@@ -42,7 +42,7 @@ public class UserBaseConstant {
     public static final Integer ORDER_STATE_CONFIRMED = 2;
     public static final Integer ORDER_STATE_CANCELED = 3;
     public static final Integer ORDER_STATE_REFUNDED = 3;
-
+    public static final Integer ORDER_STATE_BEING_TRANSPOSTED = 4;
 
     private UserBaseConstant(){
         throw new IllegalStateException("Utility class");

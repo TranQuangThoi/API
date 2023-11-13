@@ -7,6 +7,7 @@ import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.OrderDto;
+import com.techmarket.api.exception.UnauthorizationException;
 import com.techmarket.api.form.order.CreateOrderForm;
 import com.techmarket.api.form.order.UpdateMyOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +52,7 @@ public class OrderController extends ABasicController{
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_L')")
+    @PreAuthorize("hasRole('OD_L')")
     public ApiMessageDto<ResponseListDto<List<OrderDto>>> getList(@Valid OrderCriteria orderCriteria, Pageable pageable) {
 
         ApiMessageDto<ResponseListDto<List<OrderDto>>> apiMessageDto = new ApiMessageDto<>();
@@ -67,7 +69,7 @@ public class OrderController extends ABasicController{
     }
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_V')")
+    @PreAuthorize("hasRole('OD_V')")
     public ApiMessageDto<OrderDto> getOrder(@PathVariable("id") Long id) {
         ApiMessageDto<OrderDto> apiMessageDto = new ApiMessageDto<>();
 
@@ -111,8 +113,8 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
-    @PutMapping(value = "/update-Order", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_V')")
+    @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('OD_U')")
     public ApiMessageDto<String> updateOrder(@Valid @RequestBody UpdateOrder updateOrder ,BindingResult bindingResult) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
 
@@ -131,10 +133,13 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
     @PutMapping(value = "/update-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_V')")
     public ApiMessageDto<String> updateMyOrder(@Valid @RequestBody UpdateMyOrderForm updateOrder , BindingResult bindingResult) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
 
+        if (!isUser())
+        {
+            throw new UnauthorizationException("Not allowed to update order.");
+        }
         Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
         if (order ==null)
         {
@@ -144,7 +149,25 @@ public class OrderController extends ABasicController{
             return apiMessageDto;
         }
 
-//        if (updateOrder.getStatus().equals(UserBaseConstant))
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_BEING_TRANSPOSTED))
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Orders that have been shipped cannot be canceled");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_CANCEL);
+            return apiMessageDto;
+        }
+        if (updateOrder.getState()!=null)
+        {
+            if (!updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("just allow user canncel order");
+                apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_CANCEL);
+                return apiMessageDto;
+            }
+            order.setState(updateOrder.getState());
+        }
+
         orderRepository.save(order);
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;
@@ -209,6 +232,8 @@ public class OrderController extends ABasicController{
             orderDetail.setProductVariantId(productVariant.getId());
             orderDetail.setAmount(item.getQuantity());
             orderDetail.setPrice(item.getPrice());
+            orderDetail.setColor(productVariant.getColor());
+            orderDetail.setName(productVariant.getProduct().getName());
             orderDetailRepository.save(orderDetail);
             totalPrice += item.getPrice();
 
@@ -221,7 +246,6 @@ public class OrderController extends ABasicController{
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
-
         cookie.clearCartCookie(request,response);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;

@@ -131,6 +131,7 @@ public class ErrorCode {
      */
 
     public static final String ORDER_ERROR_NOT_FOUND = "ERROR-ORDER-0000";
+    public static final String ORDER_ERROR_NOT_CANCEL = "ERROR-ORDER-0001";
 
 
 }
