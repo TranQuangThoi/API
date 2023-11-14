@@ -32,6 +32,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/v1/address")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AddressController extends ABasicController {
 
     @Autowired

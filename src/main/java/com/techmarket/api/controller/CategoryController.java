@@ -1,6 +1,7 @@
 package com.techmarket.api.controller;
 
 
+import com.techmarket.api.constant.UserBaseConstant;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
@@ -9,10 +10,15 @@ import com.techmarket.api.form.category.CreateCategoryForm;
 import com.techmarket.api.form.category.UpdateCategoryForm;
 import com.techmarket.api.mapper.CategoryMapper;
 import com.techmarket.api.model.Category;
+import com.techmarket.api.model.Product;
+import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.model.criteria.CategoryCriteria;
 import com.techmarket.api.repository.CategoryRepository;
 import com.techmarket.api.repository.NewsRepository;
+import com.techmarket.api.repository.ProductRepository;
+import com.techmarket.api.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,13 +38,17 @@ import java.util.Objects;
 public class CategoryController extends ABasicController {
 
     @Autowired
-    CategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
 
     @Autowired
-    CategoryMapper categoryMapper;
+    private CategoryMapper categoryMapper;
 
     @Autowired
-    NewsRepository newsRepository;
+    private NewsRepository newsRepository;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -80,6 +90,17 @@ public class CategoryController extends ABasicController {
             apiMessageDto.setCode(ErrorCode.CATEGORY_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
+
+        if (category.getKind().equals(UserBaseConstant.CATEGORY_KIND_PRODUCT))
+        {
+            List<Product> productList = productRepository.findAllByCategoryId(id);
+            for (Product item : productList)
+            {
+                productVariantRepository.deleteAllByProductId(item.getId());
+            }
+        }
+        productRepository.deleteAllByCategoryId(id);
+
         newsRepository.deleteAllByCategoryId(id);
         categoryRepository.deleteById(id);
         apiMessageDto.setMessage("Delete category success");

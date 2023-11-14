@@ -1,0 +1,31 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="QThoi (generated)" id="1699773197030-1">
+        <addColumn tableName="db_order">
+            <column name="is_delivery" type="bit"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-2">
+        <addColumn tableName="db_order">
+            <column name="is_paid" type="bit"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-3">
+        <addColumn tableName="db_order">
+            <column name="expected_delivery_date" type="datetime"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-4">
+        <addColumn tableName="db_order_detail">
+            <column name="price" type="double precision"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-5">
+        <addColumn tableName="db_order">
+            <column name="state" type="INT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1699773197030-6">
+        <dropForeignKeyConstraint baseTableName="db_order_detail" constraintName="FKog14efbfwlbcie6bmopqwrly7"/>
+    </changeSet>
+</databaseChangeLog>

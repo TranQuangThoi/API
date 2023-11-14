@@ -35,6 +35,14 @@ public class UserBaseConstant {
     public static final Integer GENDER_KIND_FEMALE = 1;
     public static final Integer GENDER_KIND_OTHER = 2;
 
+    public static final Integer PAYMENT_KIND_WHEN_REVEIVED = 0;
+    public static final Integer PAYMENT_KIND_BANK_TRANFER = 1;
+
+    public static final Integer ORDER_STATE_PENDING_CONFIRMATION = 1;
+    public static final Integer ORDER_STATE_CONFIRMED = 2;
+    public static final Integer ORDER_STATE_CANCELED = 3;
+    public static final Integer ORDER_STATE_REFUNDED = 3;
+    public static final Integer ORDER_STATE_BEING_TRANSPOSTED = 4;
 
     private UserBaseConstant(){
         throw new IllegalStateException("Utility class");
