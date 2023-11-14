@@ -4,6 +4,7 @@ import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.orderDetail.OrderDetailDto;
+import com.techmarket.api.mapper.OrderDetailMapper;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.model.OrderDetail;
 import com.techmarket.api.repository.OrderDetailRepository;
@@ -27,8 +28,11 @@ public class OrderDetailController {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
+
     @GetMapping(value = "/get-by-order/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ODDT_GBO')")
+//    @PreAuthorize("hasRole('ODDT_GBO')")
     public ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> getByOrder(@PathVariable("id") Long id, Pageable pageable) {
         ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<OrderDetailDto>> responseListDto = new ResponseListDto<>();
@@ -42,10 +46,12 @@ public class OrderDetailController {
         }
 
         Page<OrderDetail> orderDetail = orderDetailRepository.findAllByOrderId(id,pageable);
-        for (OrderDetail item: orderDetail)
-        {
+        responseListDto.setContent(orderDetailMapper.fromEntityToListOrderDetailDto(orderDetail.getContent()));
+        responseListDto.setTotalPages(orderDetail.getTotalPages());
+        responseListDto.setTotalElements(orderDetail.getTotalElements());
 
-        }
+        apiMessageDto.setMessage("get order detail success");
+        apiMessageDto.setData(responseListDto);
         return apiMessageDto;
     }
 }

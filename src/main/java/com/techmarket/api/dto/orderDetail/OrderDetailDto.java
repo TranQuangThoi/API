@@ -8,8 +8,8 @@ public class OrderDetailDto {
 
     private Long id;
     private Long productVariantId;
-    private String color;
     private String name;
+    private String color;
     private Integer amount;
     private Double price;
 }
