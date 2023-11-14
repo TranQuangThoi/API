@@ -22,6 +22,9 @@ public interface ProductVariantMapper {
     @BeanMapping(ignoreByDefault = true)
     ProductVariant fromCreateProVariantToEntity(CreateProductVariantForm createProductVariantForm);
 
+    @IterableMapping(elementTargetType = ProductVariant.class, qualifiedByName = "toProductVariantEntity")
+    List<ProductVariant> fromCreateProVariantToEntityList(List<CreateProductVariantForm> createProductVariantForms);
+
     @Mapping(source = "modifiedDate", target = "modifiedDate")
     @Mapping(source = "createdDate", target = "createdDate")
     @Mapping(source = "id", target = "id")
@@ -30,7 +33,6 @@ public interface ProductVariantMapper {
     @Mapping(source = "status", target = "status")
     @Mapping(source = "totalStock", target = "totalStock")
     @Mapping(source = "price",target = "price")
-    @Mapping(source = "product", target = "productDto",qualifiedByName="fromEntityToProductAutoDto")
     @Named("fromEntityToProVariantDto")
     @BeanMapping(ignoreByDefault = true)
     ProductVariantDto fromEntityToProVariantDto(ProductVariant productVariant);
@@ -44,7 +46,6 @@ public interface ProductVariantMapper {
     @Mapping(source = "color", target = "color")
     @Mapping(source = "totalStock", target = "totalStock")
     @Mapping(source = "price",target = "price")
-    @Mapping(source = "product", target = "productDto",qualifiedByName="fromEntityToProductAutoDto")
     @Named("fromEntityToProVariantDtoAuto")
     @BeanMapping(ignoreByDefault = true)
     ProductVariantDto fromEntityToProVariantDtoAuto(ProductVariant productVariant);
@@ -57,6 +58,7 @@ public interface ProductVariantMapper {
     @Mapping(source = "price", target = "price")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "color", target = "color")
+    @Mapping(source = "totalStock",target = "totalStock")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateToEntityProViant(UpdateProductVariantForm updateProductVariantForm, @MappingTarget ProductVariant productVariant);
 

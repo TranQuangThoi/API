@@ -1,11 +1,15 @@
 package com.techmarket.api.form.product;
 
+import com.techmarket.api.form.productVariant.CreateProductVariantForm;
+import com.techmarket.api.form.productVariant.UpdateProductVariantForm;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @ApiModel
@@ -41,4 +45,7 @@ public class UpdateProductForm {
 
     @ApiModelProperty(name = "status")
     private Integer status;
+
+    @ApiModelProperty(name = "List product varriant")
+    private List<@Valid UpdateProductVariantForm> listDetails;
 }

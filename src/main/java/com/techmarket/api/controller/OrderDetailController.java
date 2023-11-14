@@ -32,7 +32,6 @@ public class OrderDetailController {
     private OrderDetailMapper orderDetailMapper;
 
     @GetMapping(value = "/get-by-order/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('ODDT_GBO')")
     public ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> getByOrder(@PathVariable("id") Long id, Pageable pageable) {
         ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<OrderDetailDto>> responseListDto = new ResponseListDto<>();

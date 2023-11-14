@@ -9,8 +9,11 @@ import com.techmarket.api.form.brand.CreateBrandForm;
 import com.techmarket.api.form.brand.UpdateBrandForm;
 import com.techmarket.api.mapper.BrandMapper;
 import com.techmarket.api.model.Brand;
+import com.techmarket.api.model.Product;
 import com.techmarket.api.model.criteria.BrandCriteria;
 import com.techmarket.api.repository.BrandRepository;
+import com.techmarket.api.repository.ProductRepository;
+import com.techmarket.api.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +35,10 @@ public class BrandController extends ABasicController{
     private BrandMapper brandMapper;
     @Autowired
     private BrandRepository brandRepository;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
 
 
 
@@ -119,6 +126,12 @@ public class BrandController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.BRAND_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
+        List<Product> productList = productRepository.findAllByBrandId(id);
+        for (Product item : productList)
+        {
+            productVariantRepository.deleteAllByProductId(item.getId());
+        }
+        productRepository.deleteAllByBrandId(id);
         brandRepository.delete(brandExist);
         apiMessageDto.setMessage("Delete brand success");
         return apiMessageDto;

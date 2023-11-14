@@ -11,6 +11,5 @@ public class ProductVariantDto extends ABasicAdminDto {
     private String color;
     private String image;
     private Integer totalStock;
-    private ProductDto productDto;
     private Integer status;
 }

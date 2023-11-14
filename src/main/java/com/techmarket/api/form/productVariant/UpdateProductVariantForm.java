@@ -23,9 +23,6 @@ public class UpdateProductVariantForm {
     private String image;
     @ApiModelProperty(name = "totalStock")
     private Integer totalStock;
-    @NotNull(message = "productId cant not be null")
-    @ApiModelProperty(name = "productId", required = true)
-    private Long productId;
     @NotNull(message = "status cant not be null")
     @ApiModelProperty(name = "status",required = true)
     private Integer status;

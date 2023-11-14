@@ -22,9 +22,6 @@ public class CreateProductVariantForm {
     @NotNull(message = "amount cant not be empty")
     @ApiModelProperty(name = "amount",required = true)
     private Integer totalStock;
-    @NotNull(message = "productId cant not be empty")
-    @ApiModelProperty(name = "productId", required = true)
-    private Long productId;
     @ApiModelProperty(name = "status")
     private Integer status;
 }
