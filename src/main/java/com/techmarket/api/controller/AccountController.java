@@ -264,8 +264,8 @@ public class AccountController extends ABasicController{
     }
 
     @PostMapping(value = "/forget_password", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<Long> forgetPassword(@Valid @RequestBody ForgetPasswordForm forgetForm, BindingResult bindingResult){
-        ApiResponse<Long> apiMessageDto = new ApiResponse<>();
+    public ApiResponse<String> forgetPassword(@Valid @RequestBody ForgetPasswordForm forgetForm, BindingResult bindingResult){
+        ApiResponse<String> apiMessageDto = new ApiResponse<>();
 
         String[] hash = AESUtils.decrypt(forgetForm.getIdHash(),true).split(";",2);
         Long id = ConvertUtils.convertStringToLong(hash[0]);

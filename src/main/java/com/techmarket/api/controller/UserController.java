@@ -4,14 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.techmarket.api.constant.UserBaseConstant;
 import com.techmarket.api.dto.ApiMessageDto;
+import com.techmarket.api.dto.ApiResponse;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
+import com.techmarket.api.dto.account.ForgetPasswordDto;
 import com.techmarket.api.dto.user.UserAutoCompleteDto;
 import com.techmarket.api.dto.user.UserDto;
-import com.techmarket.api.form.user.LoginForm;
-import com.techmarket.api.form.user.SignUpUserForm;
-import com.techmarket.api.form.user.UpdateMyprofile;
-import com.techmarket.api.form.user.UpdateUserForm;
+import com.techmarket.api.form.account.ForgetPasswordForm;
+import com.techmarket.api.form.user.*;
 import com.techmarket.api.mapper.AccountMapper;
 import com.techmarket.api.mapper.UserMapper;
 import com.techmarket.api.model.Account;
@@ -19,6 +19,9 @@ import com.techmarket.api.model.Group;
 import com.techmarket.api.model.User;
 import com.techmarket.api.model.criteria.UserCriteria;
 import com.techmarket.api.repository.*;
+import com.techmarket.api.service.UserBaseApiService;
+import com.techmarket.api.utils.AESUtils;
+import com.techmarket.api.utils.ConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -59,11 +63,13 @@ public class UserController extends ABasicController{
 
     @Autowired
     private ServiceRepository serviceRepository;
+    @Autowired
+    UserBaseApiService userBaseApiService;
 
     @PostMapping(value = "/signup", produces= MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> create(@Valid @RequestBody SignUpUserForm signUpUserForm, BindingResult bindingResult)
+    public ApiMessageDto<ForgetPasswordDto> create(@Valid @RequestBody SignUpUserForm signUpUserForm, BindingResult bindingResult)
     {
-        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        ApiMessageDto<ForgetPasswordDto> apiMessageDto = new ApiMessageDto<>();
 
             Account accountByPhone = accountRepository.findAccountByPhone(signUpUserForm.getPhone());
             if (accountByPhone!=null)
@@ -90,33 +96,83 @@ public class UserController extends ABasicController{
         account.setKind(UserBaseConstant.USER_KIND_USER);
         Group group = groupRepository.findFirstByKind(UserBaseConstant.GROUP_KIND_USER);
         account.setGroup(group);
-        account.setStatus(UserBaseConstant.STATUS_ACTIVE);
+        account.setStatus(UserBaseConstant.STATUS_LOCK);
         accountRepository.save(account);
 
         User user = new User();
         user.setAccount(account);
         user.setBirthday(signUpUserForm.getBirthday());
-        user.setStatus(UserBaseConstant.STATUS_ACTIVE);
+        user.setStatus(UserBaseConstant.STATUS_LOCK);
         userRepository.save(user);
-        apiMessageDto.setMessage("Sign Up Success");
+
+        String otp = userBaseApiService.getOTPForgetPassword();
+        account.setAttemptCode(0);
+        account.setResetPwdCode(otp);
+        account.setResetPwdTime(new Date());
+        accountRepository.save(account);
+
+        //send email
+        userBaseApiService.sendEmail(account.getEmail(),"OTP: "+otp, "confirm",false);
+
+        ForgetPasswordDto forgetPasswordDto = new ForgetPasswordDto();
+        String hash = AESUtils.encrypt (account.getId()+";"+otp, true);
+        forgetPasswordDto.setIdHash(hash);
+
+        apiMessageDto.setData(forgetPasswordDto);
+        apiMessageDto.setMessage("Check your email to receive otp to complete the final registration step");
         return apiMessageDto;
     }
 
-    @PostMapping(value = "/login", produces= MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> login(@Valid @RequestBody LoginForm loginForm, BindingResult bindingResult)
-    {
-        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+    @PostMapping(value = "/confirm_otp", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiResponse<String> forgetPassword(@Valid @RequestBody ConfirmOtp confirmOtp, BindingResult bindingResult){
+        ApiResponse<String> apiMessageDto = new ApiResponse<>();
 
-        Account account = accountRepository.findAccountByPhone(loginForm.getPhone());
-        if (account==null||!passwordEncoder.matches((loginForm.getPassword()),account.getPassword()))
-        {
-            apiMessageDto.setMessage("phone number or password is not correct ");
-            apiMessageDto.setCode(ErrorCode.USER_ERROR_LOGIN_FAILED);
+        String[] hash = AESUtils.decrypt(confirmOtp.getIdHash(),true).split(";",2);
+        Long id = ConvertUtils.convertStringToLong(hash[0]);
+        if(id <= 0){
             apiMessageDto.setResult(false);
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_WRONG_HASH_RESET_PASS);
             return apiMessageDto;
         }
-        apiMessageDto.setMessage("Login Success");
-        return apiMessageDto;
+
+        Account account = accountRepository.findById(id).orElse(null);
+        if (account == null ) {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+
+        if(account.getAttemptCode() >= UserBaseConstant.MAX_ATTEMPT_FORGET_PWD){
+            apiMessageDto.setResult(false);
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_LOCKED);
+            return apiMessageDto;
+        }
+
+        if(!account.getResetPwdCode().equals(confirmOtp.getOtp()) ||
+                (new Date().getTime() - account.getResetPwdTime().getTime() >= UserBaseConstant.MAX_TIME_FORGET_PWD)){
+
+            //tang so lan
+            account.setAttemptCode(account.getAttemptCode()+1);
+            accountRepository.save(account);
+
+            apiMessageDto.setResult(false);
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_OPT_INVALID);
+            return apiMessageDto;
+        }
+
+        account.setResetPwdTime(null);
+        account.setResetPwdCode(null);
+        account.setAttemptCode(null);
+        account.setStatus(UserBaseConstant.STATUS_ACTIVE);
+        accountRepository.save(account);
+
+        User user = userRepository.findByAccountId(account.getId()).orElse(null);
+        user.setStatus(UserBaseConstant.STATUS_ACTIVE);
+        userRepository.save(user);
+
+        apiMessageDto.setResult(true);
+        apiMessageDto.setMessage("sign up success.");
+        return  apiMessageDto;
     }
     @GetMapping(value = "/get/{id}", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('US_V')")
