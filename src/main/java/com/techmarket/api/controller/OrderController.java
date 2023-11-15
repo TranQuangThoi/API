@@ -46,8 +46,6 @@ public class OrderController extends ABasicController{
     @Autowired
     private OrderDetailRepository orderDetailRepository;
     @Autowired
-    private AccountRepository accountRepository;
-    @Autowired
     private ProductRepository productRepository;
 
 

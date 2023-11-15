@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class AmountReviewDto {
     @ApiModelProperty(name = "star")
-    private Integer star;
+    private Double star;
     @ApiModelProperty(name = "amount")
     private Long amount;
 }

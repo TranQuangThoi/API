@@ -16,11 +16,4 @@ public class UpdateReviewForm {
     @ApiModelProperty(name = "status", required = true)
     private Integer status;
 
-    @NotNull(message = "star cannot be null")
-    @ApiModelProperty(name = "star", required = true)
-    @ReviewStar
-    private Integer star;
-
-    @ApiModelProperty(name = "message")
-    private String message;
 }

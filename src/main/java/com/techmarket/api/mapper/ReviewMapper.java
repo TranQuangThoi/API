@@ -18,8 +18,7 @@ public interface ReviewMapper {
     @Named("adminCreateMapping")
     Review fromCreateFormToEntity(CreateReviewForm createForm);
 
-    @Mapping(source = "star", target = "star")
-    @Mapping(source = "message", target = "message")
+    @Mapping(source = "status", target = "status")
     @BeanMapping(ignoreByDefault = true)
     @Named("adminUpdateMapping")
     void fromUpdateFormToEntityReview(UpdateReviewForm updateForm, @MappingTarget Review review);

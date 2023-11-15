@@ -1,6 +1,7 @@
 package com.techmarket.api.mapper;
 
 import com.techmarket.api.dto.product.ProductDto;
+import com.techmarket.api.dto.product.RateProductDto;
 import com.techmarket.api.form.product.CreateProductForm;
 import com.techmarket.api.form.product.UpdateProductForm;
 import com.techmarket.api.model.Product;
@@ -68,5 +69,16 @@ public interface ProductMapper {
     @Mapping(source = "saleOff",target = "saleOff")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateToEntityProduct(UpdateProductForm updateProductForm, @MappingTarget Product product);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "image", target = "image")
+    @Named("ToProductRateDto")
+    @BeanMapping(ignoreByDefault = true)
+    RateProductDto toProductRateDto(Product product);
+
+    @BeanMapping(ignoreByDefault = true)
+    @IterableMapping(elementTargetType = RateProductDto.class,qualifiedByName = "ToProductRateDto")
+    List<RateProductDto> toProductRateListDto(List<Product> products);
 
 }
