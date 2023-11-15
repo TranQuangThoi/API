@@ -234,6 +234,7 @@ public class OrderController extends ABasicController{
             orderDetail.setPrice(item.getPrice());
             orderDetail.setColor(productVariant.getColor());
             orderDetail.setName(productVariant.getProduct().getName());
+            orderDetail.setProduct_Id(productVariant.getProduct().getId());
             orderDetailRepository.save(orderDetail);
             totalPrice += item.getPrice();
 

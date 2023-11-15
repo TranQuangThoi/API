@@ -45,6 +45,8 @@ import java.util.List;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
 public class UserController extends ABasicController{
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -212,6 +214,7 @@ public class UserController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_ALLOW_DELETE_SUPPER_ADMIN);
             return apiMessageDto;
         }
+        reviewRepository.deleteAllByUserId(id);
         addressRepository.deleteAllByUserId(id);
         userRepository.delete(user);
         serviceRepository.deleteAllByAccountId(account.getId());

@@ -11,8 +11,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @ApiModel
 public class CreateProductVariantForm {
-
-    @ApiModelProperty(name = "price")
+    @NotNull(message = "price cant not be empty")
+    @ApiModelProperty(name = "price",required = true)
     private Double price;
     @NotEmpty(message = "color cant not be empty")
     @ApiModelProperty(name = "color", required = true)
@@ -24,4 +24,7 @@ public class CreateProductVariantForm {
     private Integer totalStock;
     @ApiModelProperty(name = "status")
     private Integer status;
+    @ApiModelProperty(name = "productId",required = true)
+    private Long productId;
+
 }
