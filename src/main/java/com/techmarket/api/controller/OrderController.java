@@ -124,6 +124,22 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
+        if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
+        {
+           List<OrderDetail> orderDetail = orderDetailRepository.findAllByOrderId(updateOrder.getId());
+           for (OrderDetail item : orderDetail)
+           {
+               ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
+               productVariant.setTotalStock(productVariant.getTotalStock() + item.getAmount());
+               Product product = productRepository.findById(item.getProduct_Id()).orElse(null);
+               product.setTotalInStock(product.getTotalInStock() + item.getAmount());
+               product.setSoldAmount(product.getSoldAmount() - item.getAmount());
+               productVariantRepository.save(productVariant);
+               productRepository.save(product);
+           }
+
+
+        }
 
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
         orderRepository.save(order);
