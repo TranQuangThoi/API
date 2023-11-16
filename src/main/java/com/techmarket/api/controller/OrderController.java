@@ -162,26 +162,22 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-
-        if (order.getState().equals(UserBaseConstant.ORDER_STATE_BEING_TRANSPOSTED))
+        if (!order.getState().equals(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION))
         {
             apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("Orders that have been shipped cannot be canceled");
-            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_CANCEL);
+            apiMessageDto.setMessage("You cannot update your order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
             return apiMessageDto;
         }
-        if (updateOrder.getState()!=null)
+        if (!updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION) &&
+        !updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
         {
-            if (!updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("just allow user canncel order");
-                apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_CANCEL);
-                return apiMessageDto;
-            }
-            order.setState(updateOrder.getState());
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("You cannot change to another state other than canceling the order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
+            return apiMessageDto;
         }
-
+        orderMapper.fromUpdateMyOrderToEntity(updateOrder,order);
         orderRepository.save(order);
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;

@@ -24,7 +24,7 @@ public class OrderCriteria {
     private String district;
     private String receiver;
     private String phone;
-    private Integer status;
+    private Integer state;
 
     public Specification<Order> getCriteria() {
         return new Specification<Order>() {
@@ -39,8 +39,8 @@ public class OrderCriteria {
                 if(getUserId() != null){
                     predicates.add(cb.equal(root.get("user").get("id"), getUserId()));
                 }
-                if(getStatus() != null){
-                    predicates.add(cb.equal(root.get("status"), getStatus()));
+                if(getState() != null){
+                    predicates.add(cb.equal(root.get("state"), getState()));
                 }
                 if(getPaymentMethod() != null){
                     predicates.add(cb.equal(root.get("paymentMethod"), getPaymentMethod()));
