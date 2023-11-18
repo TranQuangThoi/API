@@ -22,11 +22,11 @@ public class FileController {
     private CloudinaryService cloudinaryService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<UploadFileDto> upload(@RequestParam("file") MultipartFile file) {
+    public ApiMessageDto<UploadFileDto> upload(@Valid UploadFileForm uploadFileForm, BindingResult bindingResult) {
         ApiMessageDto<UploadFileDto> apiMessageDto = new ApiMessageDto<>();
 
         try {
-            String filePath = cloudinaryService.upload(file);
+            String filePath = cloudinaryService.upload(uploadFileForm.getFile());
             UploadFileDto uploadFileDto = new UploadFileDto();
             uploadFileDto.setFilePath(filePath);
 
