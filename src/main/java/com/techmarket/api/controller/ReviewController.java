@@ -176,7 +176,7 @@ public class ReviewController extends ABasicController{
             return apiMessageDto;
         }
 
-        List<OrderDetail> orderDetailList = orderDetailRepository.findUnpaidOrderDetailsByUserIdAndProductId(user.getId(),createReviewForm.getProductId());
+        List<OrderDetail> orderDetailList = orderDetailRepository.findUnpaidOrderDetailsByUserIdAndProductId(UserBaseConstant.ORDER_STATE_COMPLETED,user.getId(),createReviewForm.getProductId());
         if (orderDetailList.size()==0)
         {
             apiMessageDto.setResult(false);
@@ -218,7 +218,7 @@ public class ReviewController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        List<Long> productId = orderDetailRepository.findProductIdUnrated(user.getId());
+        List<Long> productId = orderDetailRepository.findProductIdUnrated(UserBaseConstant.ORDER_STATE_COMPLETED,user.getId());
         List<Product> productList = new ArrayList<>();
         if (productId.size()!=0)
         {

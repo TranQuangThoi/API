@@ -283,4 +283,15 @@ public class ProductController extends ABasicController{
         return apiMessageDto;
     }
 
+    @GetMapping(value = "/get-product-top10",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<List<ProductDto>> top10BestSellingt()
+    {
+        ApiMessageDto<List<ProductDto>> apiMessageDto = new ApiMessageDto<>();
+        List<Product> listProduct = productRepository.findTop10ProductsBySoldAmount(PageRequest.of(0,10));
+
+        apiMessageDto.setData(productMapper.fromEntityToListProductAutoDto(listProduct));
+        apiMessageDto.setMessage("get top 10 best saler");
+        return apiMessageDto;
+    }
+
 }

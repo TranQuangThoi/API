@@ -41,8 +41,7 @@ public class UserBaseConstant {
     public static final Integer ORDER_STATE_PENDING_CONFIRMATION = 1;
     public static final Integer ORDER_STATE_CONFIRMED = 2;
     public static final Integer ORDER_STATE_CANCELED = 3;
-    public static final Integer ORDER_STATE_REFUNDED = 3;
-    public static final Integer ORDER_STATE_BEING_TRANSPOSTED = 4;
+    public static final Integer ORDER_STATE_COMPLETED = 4;
 
     public static final Integer REVIEW_ONE_STAR = 1;
     public static final Integer REVIEW_TWO_STAR = 2;

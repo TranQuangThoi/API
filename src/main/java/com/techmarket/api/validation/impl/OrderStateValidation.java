@@ -21,9 +21,8 @@ public class OrderStateValidation implements ConstraintValidator<OrderState,Inte
             return false;
         }
         if(!Objects.equals(state, UserBaseConstant.ORDER_STATE_CANCELED) &&
-                !Objects.equals(state, UserBaseConstant.ORDER_STATE_REFUNDED) &&
                 !Objects.equals(state, UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION)&&
-                !Objects.equals(state, UserBaseConstant.ORDER_STATE_BEING_TRANSPOSTED)&&
+                !Objects.equals(state, UserBaseConstant.ORDER_STATE_COMPLETED)&&
                 !Objects.equals(state, UserBaseConstant.ORDER_STATE_CONFIRMED)
 
         ) {
