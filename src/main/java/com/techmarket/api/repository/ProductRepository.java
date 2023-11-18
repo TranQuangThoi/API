@@ -1,6 +1,8 @@
 package com.techmarket.api.repository;
 
 import com.techmarket.api.model.Product;
+import org.hibernate.sql.Select;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     void deleteAllByBrandId(Long id);
     List<Product> findAllByCategoryId(Long id);
     List<Product> findAllByBrandId(Long id);
+
+    @Query("SELECT p FROM Product p ORDER BY p.soldAmount DESC")
+    List<Product> findTop10ProductsBySoldAmount(Pageable pageable);
+
 }

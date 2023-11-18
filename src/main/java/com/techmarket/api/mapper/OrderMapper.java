@@ -2,6 +2,7 @@ package com.techmarket.api.mapper;
 
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.form.order.CreateOrderForm;
+import com.techmarket.api.form.order.UpdateMyOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
 import com.techmarket.api.model.Order;
 
@@ -38,8 +39,7 @@ public interface OrderMapper {
     @Mapping(source = "totalMoney",target = "totalMoney")
     @Mapping(source = "user.id",target = "userId")
     @Mapping(source = "isPaid",target = "isPaid")
-    @Mapping(source = "isDelivery",target = "isDelivery")
-    @Mapping(source = "status",target = "status")
+    @Mapping(source = "state",target = "state")
     @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
     @Named("fromOrderToDto")
     @BeanMapping(ignoreByDefault = true)
@@ -49,12 +49,22 @@ public interface OrderMapper {
     @IterableMapping(elementTargetType = OrderDto.class,qualifiedByName = "fromOrderToDto")
     List<OrderDto> fromEntityToListOrderDto(List<Order> orders);
 
-    @Mapping(source = "isDelivery",target = "isDelivery")
     @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
     @Mapping(source = "state",target = "state")
     @Mapping(source = "isPaid",target = "isPaid")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateToOrderEntity(UpdateOrder updateOrder, @MappingTarget Order order);
 
+
+    @Mapping(source = "state",target = "state")
+    @Mapping(source = "note", target = "note")
+    @Mapping(source = "address",target = "address")
+    @Mapping(source = "phone", target = "phone")
+    @Mapping(source = "receiver", target = "receiver")
+    @Mapping(source = "district",target = "district")
+    @Mapping(source = "ward", target = "ward")
+    @Mapping(source = "province",target = "province")
+    @BeanMapping(ignoreByDefault = true)
+    void fromUpdateMyOrderToEntity(UpdateMyOrderForm updateMyOrderForm, @MappingTarget Order order);
 
 }

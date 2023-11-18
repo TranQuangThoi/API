@@ -41,8 +41,6 @@ public class Order extends Auditable<String>{
     private Date expectedDeliveryDate;
     @Column(name = "is_paid")
     private Boolean isPaid=false;
-    @Column(name = "is_delivery")
-    private Boolean isDelivery=false;
     private Integer state;
 
 }

@@ -29,6 +29,7 @@ public class OrderDetail extends Auditable<String>{
     private String color;
     private Integer amount;
     private Double price;
-
+    private Long product_Id;
+    private Boolean isReviewed=false;
 
 }

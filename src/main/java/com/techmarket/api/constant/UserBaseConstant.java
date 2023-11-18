@@ -41,9 +41,20 @@ public class UserBaseConstant {
     public static final Integer ORDER_STATE_PENDING_CONFIRMATION = 1;
     public static final Integer ORDER_STATE_CONFIRMED = 2;
     public static final Integer ORDER_STATE_CANCELED = 3;
-    public static final Integer ORDER_STATE_REFUNDED = 3;
-    public static final Integer ORDER_STATE_BEING_TRANSPOSTED = 4;
+    public static final Integer ORDER_STATE_COMPLETED = 4;
 
+    public static final Integer REVIEW_ONE_STAR = 1;
+    public static final Integer REVIEW_TWO_STAR = 2;
+    public static final Integer REVIEW_THREE_STAR = 3;
+    public static final Integer REVIEW_FOUR_STAR = 4;
+    public static final Integer REVIEW_FIVE_STAR = 5;
+    public static final Integer[] REVIEW_STARS = {
+            REVIEW_ONE_STAR,
+            REVIEW_TWO_STAR,
+            REVIEW_THREE_STAR,
+            REVIEW_FOUR_STAR,
+            REVIEW_FIVE_STAR
+    };
     private UserBaseConstant(){
         throw new IllegalStateException("Utility class");
     }

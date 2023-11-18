@@ -16,10 +16,7 @@ import com.techmarket.api.model.Category;
 import com.techmarket.api.model.Product;
 import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.model.criteria.ProductCriteria;
-import com.techmarket.api.repository.BrandRepository;
-import com.techmarket.api.repository.CategoryRepository;
-import com.techmarket.api.repository.ProductRepository;
-import com.techmarket.api.repository.ProductVariantRepository;
+import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -51,6 +48,8 @@ public class ProductController extends ABasicController{
     private ProductVariantMapper productVariantMapper;
     @Autowired
     private ProductVariantRepository productVariantRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('PR_L')")
@@ -277,9 +276,21 @@ public class ProductController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
+        reviewRepository.deleteAllByProductId(id);
         productVariantRepository.deleteAllByProductId(id);
         productRepository.delete(product);
         apiMessageDto.setMessage("Delete product success");
+        return apiMessageDto;
+    }
+
+    @GetMapping(value = "/get-product-top10",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<List<ProductDto>> top10BestSellingt()
+    {
+        ApiMessageDto<List<ProductDto>> apiMessageDto = new ApiMessageDto<>();
+        List<Product> listProduct = productRepository.findTop10ProductsBySoldAmount(PageRequest.of(0,10));
+
+        apiMessageDto.setData(productMapper.fromEntityToListProductAutoDto(listProduct));
+        apiMessageDto.setMessage("get top 10 best saler");
         return apiMessageDto;
     }
 

@@ -132,6 +132,15 @@ public class ErrorCode {
 
     public static final String ORDER_ERROR_NOT_FOUND = "ERROR-ORDER-0000";
     public static final String ORDER_ERROR_NOT_CANCEL = "ERROR-ORDER-0001";
+    public static final String ORDER_ERROR_NOT_UPDATE = "ERROR-ORDER-0002";
+
+    /**
+     * Starting error code REVIEW_ERROR
+     *
+     */
+    public static final String REVIEW_ERROR_NOT_FOUND = "ERROR-REVIEW-0000";
+    public static final String REVIEW_ERROR_CAN_NOT_RATE = "ERROR-REVIEW-0001";
+
 
 
 }
