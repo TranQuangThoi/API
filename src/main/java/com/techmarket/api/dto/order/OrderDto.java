@@ -21,6 +21,7 @@ public class OrderDto extends ABasicAdminDto {
     private Boolean isPaid;
     private Date expectedDeliveryDate;
     private Integer state;
+    private Long voucherId;
 
 
 }

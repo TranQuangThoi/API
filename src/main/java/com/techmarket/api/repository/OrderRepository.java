@@ -32,4 +32,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             "GROUP BY MONTH(od.createdDate)")
     List<RevenueOfYearDto> calculateYearRevenue(Integer state, Integer year);
 
+    @Query("SELECT od FROM Order od where od.phone= :phone ORDER BY od.createdDate DESC")
+    Page<Order> findAllByPhone(String phone,Pageable pageable);
+
 }

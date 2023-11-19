@@ -47,6 +47,8 @@ public class OrderController extends ABasicController{
     private OrderDetailRepository orderDetailRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private VoucherRepository voucherRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -255,6 +257,23 @@ public class OrderController extends ABasicController{
             product.setTotalInStock(product.getTotalInStock() - item.getQuantity());
             productRepository.save(product);
         }
+        if (createOrderForm.getVoucherId()!=null)
+        {
+            Voucher voucher = voucherRepository.findById(createOrderForm.getVoucherId()).orElse(null);
+            if (voucher==null)
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("Not found voucher");
+                apiMessageDto.setCode(ErrorCode.VOUCHER_ERROR_NOT_FOUND);
+                return apiMessageDto;
+            }
+            if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
+            {
+               order.setVoucherId(createOrderForm.getVoucherId());
+               voucher.setAmount(voucher.getAmount()-1);
+               voucherRepository.save(voucher);
+           }
+        }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
         cookie.clearCartCookie(request,response);
@@ -262,6 +281,19 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
+    @GetMapping(value = "/get-order-phone", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<OrderDto>>> getOrderByPhone(@RequestParam String phone,Pageable pageable) {
+        ApiMessageDto<ResponseListDto<List<OrderDto>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<OrderDto>> responseListDto= new ResponseListDto<>();
+        Page<Order> orderPage = orderRepository.findAllByPhone(phone,pageable);
+        responseListDto.setContent(orderMapper.fromEntityToListOrderDto(orderPage.getContent()));
+        responseListDto.setTotalPages(orderPage.getTotalPages());
+        responseListDto.setTotalElements(orderPage.getTotalElements());
+
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("get order success");
+        return apiMessageDto;
+    }
 
 
 }

@@ -42,5 +42,7 @@ public class Order extends Auditable<String>{
     @Column(name = "is_paid")
     private Boolean isPaid=false;
     private Integer state;
+    @Column(name = "voucher_Id")
+    private Long voucherId;
 
 }

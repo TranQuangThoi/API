@@ -41,6 +41,7 @@ public interface OrderMapper {
     @Mapping(source = "isPaid",target = "isPaid")
     @Mapping(source = "state",target = "state")
     @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
+    @Mapping(source = "voucherId",target = "voucherId")
     @Named("fromOrderToDto")
     @BeanMapping(ignoreByDefault = true)
     OrderDto fromOrderToDto(Order order);
