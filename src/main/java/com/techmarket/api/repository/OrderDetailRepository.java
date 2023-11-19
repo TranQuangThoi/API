@@ -12,6 +12,11 @@ import java.util.List;
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>, JpaSpecificationExecutor<OrderDetail> {
 
     Page<OrderDetail> findAllByOrderId(long id , Pageable pageable);
+    @Query("select od from OrderDetail od join od.order o "+
+            "WHERE o.phone= :phone "+
+            "AND o.id = :id")
+    Page<OrderDetail> findAllByOrderIdAndPhone(String phone,long id , Pageable pageable);
+
     List<OrderDetail> findAllByOrderId(Long id );
 
     @Query("SELECT od FROM OrderDetail od " +

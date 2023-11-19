@@ -14,8 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -48,6 +50,28 @@ public class OrderDetailController {
         responseListDto.setContent(orderDetailMapper.fromEntityToListOrderDetailDto(orderDetail.getContent()));
         responseListDto.setTotalPages(orderDetail.getTotalPages());
         responseListDto.setTotalElements(orderDetail.getTotalElements());
+
+        apiMessageDto.setMessage("get order detail success");
+        apiMessageDto.setData(responseListDto);
+        return apiMessageDto;
+    }
+    @GetMapping(value = "/get-by-phone", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> getByPhoneAndOrder(@RequestParam("phone") String phone, @RequestParam("orderId") Long orderId, Pageable pageable) {
+        ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<OrderDetailDto>> responseListDto = new ResponseListDto<>();
+        Order order = orderRepository.findByPhoneAndId(phone,orderId);
+        if (order==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Order or phone not found");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+
+        Page<OrderDetail> list = orderDetailRepository.findAllByOrderIdAndPhone(phone,orderId,pageable);
+        responseListDto.setContent(orderDetailMapper.fromEntityToListOrderDetailDto(list.getContent()));
+        responseListDto.setTotalElements(list.getTotalElements());
+        responseListDto.setTotalPages(list.getTotalPages());
 
         apiMessageDto.setMessage("get order detail success");
         apiMessageDto.setData(responseListDto);
