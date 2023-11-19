@@ -140,7 +140,11 @@ public class ErrorCode {
      */
     public static final String REVIEW_ERROR_NOT_FOUND = "ERROR-REVIEW-0000";
     public static final String REVIEW_ERROR_CAN_NOT_RATE = "ERROR-REVIEW-0001";
-
+    /**
+     * Starting error code VOUCHER_EROR
+     *
+     */
+    public static final String VOUCHER_ERROR_NOT_FOUND = "ERROR-VOUCHER-0000";
 
 
 }

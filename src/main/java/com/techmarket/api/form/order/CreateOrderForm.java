@@ -36,6 +36,8 @@ public class CreateOrderForm {
     private Integer paymentMethod;
     @ApiModelProperty(name = "note")
     private String note;
+    @ApiModelProperty(name = "voucherId")
+    private Long voucherId;
 
 
 }
