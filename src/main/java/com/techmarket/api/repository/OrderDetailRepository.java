@@ -34,11 +34,15 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>,
             "AND od.isReviewed = false")
     List<Long> findProductIdUnrated(Integer state,Long userId);
 
-    @Query("SELECT SUM(od.price) FROM OrderDetail od "+
-            "JOIN od.order o "+
-            "WHERE od.product_Id= :id "+
-            "AND o.state = :state "+
-            "AND o.isPaid= true")
-    Double calculatePriceProduct(Integer state,Long id);
+    @Query("SELECT od.product_Id, SUM(od.price) as totalPrice " +
+            "FROM OrderDetail od " +
+            "JOIN od.order o " +
+            "WHERE o.state = :state " +
+            "AND o.isPaid = true " +
+            "GROUP BY od.product_Id "+
+            "ORDER BY totalPrice DESC")
+    Page<Object[]> calculatePriceProduct(Integer state, Pageable pageable);
+
+
 
 }
