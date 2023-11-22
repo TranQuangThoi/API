@@ -1,3 +1,5 @@
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 stages:
   - api
   - build jar
@@ -15,6 +17,9 @@ stages:
 #    - api
 #  only:
 #    - dev
+before_script:
+  - apt-get update -qy
+  - apt-get install -y git
 build:
   image: maven:3.6.2-jdk-11-slim
   stage: build jar
