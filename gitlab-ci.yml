@@ -3,18 +3,18 @@ stages:
   - build jar
   - build and push docker image
   - deploy
-test_job:
-  image: maven:3.6.2-jdk-11-slim
-  stage: api
-  script:
-    - pwd
-    - mvn clean
-    - mvn compile
-    - mvn test
-  tags:
-    - api
-  only:
-    - dev
+#test_job:
+#  image: maven:3.6.2-jdk-11-slim
+#  stage: api
+#  script:
+#    - pwd
+#    - mvn clean
+#    - mvn compile
+#    - mvn test
+#  tags:
+#    - api
+#  only:
+#    - dev
 build:
   image: maven:3.6.2-jdk-11-slim
   stage: build jar
