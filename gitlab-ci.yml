@@ -32,9 +32,9 @@ docker build:
   stage: build and push docker image
   script:
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
-    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:test .
+    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:latest .
     - echo "Docker login successful"
-    - docker push $DOCKER_REPO:test
+    - docker push $DOCKER_REPO:latest
   only:
     - dev
 #deploy:
