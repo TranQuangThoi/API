@@ -31,8 +31,8 @@ docker build:
   image: docker:19.03.13-dind
   stage: build and push docker image
   script:
-    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:latest .
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
+    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:latest .
     - echo "Docker login successful"
     - docker push $DOCKER_REPO:latest
   only:
