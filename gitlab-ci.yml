@@ -1,7 +1,3 @@
-variables:
-  IMAGE_NAME: quangthoi2002/tech_market
-  IMAGE_TAG: api
-
 stages:
   - test
   - build jar
@@ -36,9 +32,9 @@ docker build:
   stage: build and push docker image
   script:
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
-    - docker build -t $IMAGE_NAME:v1.0.0-$CI_COMMIT_SHA .
+    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:latest .
     - echo "Docker login successful"
-    - docker push $IMAGE_NAME:v1.0.0-$CI_COMMIT_SHA
+    - docker push $DOCKER_REPO:latest
   only:
     - dev
 #deploy:
