@@ -31,11 +31,10 @@ docker build:
   image: docker:19.03.13-dind
   stage: build and push docker image
   script:
-    - DOCKER_BASE_TAG=$(docker pull --quiet docker.io/library/openjdk:11 | sed -n 's/.*:\(.*\)/\1/p')
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
-    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:$DOCKER_BASE_TAG .
+    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:test .
     - echo "Docker login successful"
-    - docker push $DOCKER_REPO:$DOCKER_BASE_TAG
+    - docker push $DOCKER_REPO:test
   only:
     - dev
 #deploy:
