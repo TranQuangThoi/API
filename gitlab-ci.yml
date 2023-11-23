@@ -3,21 +3,21 @@ stages:
   - build jar
   - build and push docker image
   - deploy
-test_job:
-  image: maven:3.6.2-jdk-11-slim
+variables:
+  DOCKER_IMAGE_TAG: "latest"
+  DOCKER_BUILD_ARGS: "--build-arg SPRING_ACTIVE_PROFILE=dev"
+
+run_tests:
   stage: test
+  image: python:3.9-slim-buster
+  before_script:
+    - apt-get update && apt-get install make
   script:
-    - pwd
-    - mvn clean
-    - mvn compile
-    - mvn test
-  tags:
-    - test
-  only:
-    - dev
+    - make test
+
 build:
+  stage: build
   image: maven:3.6.2-jdk-11-slim
-  stage: build jar
   script:
     - mvn clean install -Dspring.profiles.active=dev && mvn package -B -e -Dspring.profiles.active=dev
   artifacts:
@@ -25,15 +25,16 @@ build:
       - target/*.jar
   only:
     - dev
-docker build:
+
+docker_build:
+  stage: build and push docker image
   services:
     - docker:19.03.13-dind
   image: docker:19.03.13-dind
-  stage: build and push docker image
   script:
-    - docker build --build-arg SPRING_ACTIVE_PROFILE=dev -t $DOCKER_REPO:latest .
+    - docker build $DOCKER_BUILD_ARGS -t $DOCKER_REPO:$DOCKER_IMAGE_TAG .
     - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
-    - docker push $DOCKER_REPO:latest
+    - docker push $DOCKER_REPO:$DOCKER_IMAGE_TAG
   only:
     - dev
 deploy:
