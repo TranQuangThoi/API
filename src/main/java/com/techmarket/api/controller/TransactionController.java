@@ -3,6 +3,7 @@ package com.techmarket.api.controller;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import com.techmarket.api.Transaction.PaymentService;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.form.transaction.CreatePaymentForm;
@@ -31,6 +32,8 @@ public class TransactionController extends ABasicController{
     private OrderRepository orderRepository;
     @Autowired
     APIContext apiContext;
+    @Autowired
+    private PaymentService paymentService;
 
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -47,7 +50,7 @@ public class TransactionController extends ABasicController{
         }
 
         try {
-            Payment payment = createPayment(createPaymentForm);
+            Payment payment = paymentService.createPayment(createPaymentForm);
             for (Links link : payment.getLinks()) {
                 if (link.getRel().equals("approval_url")) {
                   apiMessageDto.setData(link.getHref());
@@ -86,7 +89,7 @@ public class TransactionController extends ABasicController{
         }
 
         try {
-            Payment payment = executePayment(paymentId, payerId);
+            Payment payment = paymentService.executePayment(paymentId, payerId);
             if (payment.getState().equals("approved")) {
 
                 Order order = orderRepository.findById(orderId).orElse(null);
@@ -106,52 +109,5 @@ public class TransactionController extends ABasicController{
 
 
         return apiMessageDto;
-    }
-    public Payment executePayment(String paymentId, String payerId) throws PayPalRESTException {
-        Payment payment = new Payment();
-        payment.setId(paymentId);
-
-        PaymentExecution paymentExecute = new PaymentExecution();
-        paymentExecute.setPayerId(payerId);
-        return payment.execute(apiContext, paymentExecute);
-    }
-    public Payment createPayment(CreatePaymentForm createPaymentForm)throws PayPalRESTException
-    {
-        ItemList itemList = new ItemList();
-        List<Item> items = new ArrayList<>();
-
-        Item item = new Item();
-        item.setName("Nạp tiền ");
-        item.setCurrency("USD");
-        item.setPrice(createPaymentForm.getAmount().toString());
-        item.setQuantity("1");
-        items.add(item);
-        itemList.setItems(items);
-
-        Amount amount = new Amount();
-        amount.setCurrency("USD");
-        amount.setTotal(createPaymentForm.getAmount().toString());
-
-        Transaction transaction = new Transaction();
-        transaction.setDescription("Nạp tiền ");
-        transaction.setAmount(amount);
-        transaction.setItemList(itemList);
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(transaction);
-
-        Payer payer = new Payer();
-        payer.setPaymentMethod("paypal");
-
-        Payment payment = new Payment();
-        payment.setIntent("sale");
-        payment.setPayer(payer);
-        payment.setTransactions(transactions);
-
-        RedirectUrls redirectUrls = new RedirectUrls();
-        redirectUrls.setReturnUrl(createPaymentForm.getUrlSuccess());
-        redirectUrls.setCancelUrl(createPaymentForm.getUrlCancel());
-        payment.setRedirectUrls(redirectUrls);
-        apiContext.setMaskRequestId(true);
-        return payment.create(apiContext);
     }
 }
