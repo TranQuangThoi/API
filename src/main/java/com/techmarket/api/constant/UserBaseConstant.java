@@ -35,7 +35,7 @@ public class UserBaseConstant {
     public static final Integer GENDER_KIND_FEMALE = 1;
     public static final Integer GENDER_KIND_OTHER = 2;
 
-    public static final Integer PAYMENT_KIND_WHEN_REVEIVED = 0;
+    public static final Integer PAYMENT_KIND_CASH = 0;
     public static final Integer PAYMENT_KIND_BANK_TRANFER = 1;
 
     public static final Integer ORDER_STATE_PENDING_CONFIRMATION = 1;
