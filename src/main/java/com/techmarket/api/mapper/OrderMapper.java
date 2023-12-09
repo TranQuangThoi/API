@@ -57,7 +57,6 @@ public interface OrderMapper {
     void fromUpdateToOrderEntity(UpdateOrder updateOrder, @MappingTarget Order order);
 
 
-    @Mapping(source = "state",target = "state")
     @Mapping(source = "note", target = "note")
     @Mapping(source = "address",target = "address")
     @Mapping(source = "phone", target = "phone")

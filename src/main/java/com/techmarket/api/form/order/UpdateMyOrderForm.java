@@ -13,10 +13,6 @@ public class UpdateMyOrderForm {
     @NotNull(message = "id can not be null")
     @ApiModelProperty(name = "id", required = true)
     private Long id;
-
-    @ApiModelProperty(name = "state")
-    @OrderState
-    private Integer state;
     @NotEmpty(message = "province can not be empty")
     @ApiModelProperty(name = "province", required = true)
     private String province;

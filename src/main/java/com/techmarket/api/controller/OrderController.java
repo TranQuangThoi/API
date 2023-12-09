@@ -8,6 +8,7 @@ import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.exception.UnauthorizationException;
+import com.techmarket.api.form.order.ChangeStateMyOrder;
 import com.techmarket.api.form.order.CreateOrderForm;
 import com.techmarket.api.form.order.UpdateMyOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
@@ -15,6 +16,7 @@ import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
 import com.techmarket.api.repository.*;
+import com.techmarket.api.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,8 @@ public class OrderController extends ABasicController{
     private ProductRepository productRepository;
     @Autowired
     private VoucherRepository voucherRepository;
+    @Autowired
+    private OrderService orderService;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,21 +130,16 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Customer has been canceled order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_CANCELED);
+            return apiMessageDto;
+        }
         if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
         {
-           List<OrderDetail> orderDetail = orderDetailRepository.findAllByOrderId(updateOrder.getId());
-           for (OrderDetail item : orderDetail)
-           {
-               ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
-               productVariant.setTotalStock(productVariant.getTotalStock() + item.getAmount());
-               Product product = productRepository.findById(item.getProduct_Id()).orElse(null);
-               product.setTotalInStock(product.getTotalInStock() + item.getAmount());
-               product.setSoldAmount(product.getSoldAmount() - item.getAmount());
-               productVariantRepository.save(productVariant);
-               productRepository.save(product);
-           }
-
-
+            orderService.canelOrder(updateOrder.getId());
         }
 
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
@@ -164,18 +163,11 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        if (!order.getState().equals(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION))
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED)
+                || order.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
         {
             apiMessageDto.setResult(false);
             apiMessageDto.setMessage("You cannot update your order");
-            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
-            return apiMessageDto;
-        }
-        if (!updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION) &&
-        !updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
-        {
-            apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("You cannot change to another state other than canceling the order");
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
             return apiMessageDto;
         }
@@ -184,7 +176,38 @@ public class OrderController extends ABasicController{
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;
     }
-    @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/cancel-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> cancelMyOrder(@Valid @RequestBody ChangeStateMyOrder changeStateMyOrder ,BindingResult bindingResult) {
+        if (!isUser())
+        {
+            throw new UnauthorizationException("Not allowed to update order.");
+        }
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+
+        Order order = orderRepository.findById(changeStateMyOrder.getId()).orElse(null);
+        if (order ==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED)
+                || order.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("This status cannot be updated once canceled or completed");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
+            return apiMessageDto;
+        }
+        order.setState(UserBaseConstant.ORDER_STATE_CANCELED);
+        orderService.canelOrder(changeStateMyOrder.getId());
+        orderRepository.save(order);
+        apiMessageDto.setMessage("Cancel order success");
+        return apiMessageDto;
+    }
+
+        @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
             , HttpServletRequest request , HttpServletResponse response)
     {

@@ -87,11 +87,9 @@ public class TransactionController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-
         try {
             Payment payment = paymentService.executePayment(paymentId, payerId);
             if (payment.getState().equals("approved")) {
-
                 Order order = orderRepository.findById(orderId).orElse(null);
                 if (order==null)
                 {
@@ -100,13 +98,10 @@ public class TransactionController extends ABasicController{
                 }
                 order.setIsPaid(true);
                 orderRepository.save(order);
-
-
             }
         } catch (PayPalRESTException e) {
             System.out.println(e.getMessage());
         }
-
 
         return apiMessageDto;
     }
