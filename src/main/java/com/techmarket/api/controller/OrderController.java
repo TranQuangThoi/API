@@ -255,6 +255,7 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setResult(false);
                 apiMessageDto.setMessage("Product variant sold out");
                 apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                orderRepository.delete(order);
                 return apiMessageDto;
             }
             if(productVariant.getTotalStock() < item.getQuantity())
@@ -262,6 +263,7 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setResult(false);
                 apiMessageDto.setMessage("product quantity has been exceeded ,Please reduce product quantity");
                 apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                orderRepository.delete(order);
                 return apiMessageDto;
             }
             orderDetail.setProductVariantId(productVariant.getId());
@@ -288,6 +290,7 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setResult(false);
                 apiMessageDto.setMessage("Not found voucher");
                 apiMessageDto.setCode(ErrorCode.VOUCHER_ERROR_NOT_FOUND);
+                orderRepository.delete(order);
                 return apiMessageDto;
             }
             if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
