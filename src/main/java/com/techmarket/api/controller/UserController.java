@@ -98,7 +98,7 @@ public class UserController extends ABasicController{
         account.setKind(UserBaseConstant.USER_KIND_USER);
         Group group = groupRepository.findFirstByKind(UserBaseConstant.GROUP_KIND_USER);
         account.setGroup(group);
-        account.setStatus(UserBaseConstant.STATUS_LOCK);
+        account.setStatus(UserBaseConstant.STATUS_PENDING);
         accountRepository.save(account);
 
         User user = new User();
