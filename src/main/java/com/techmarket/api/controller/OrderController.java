@@ -46,10 +46,6 @@ public class OrderController extends ABasicController{
     @Autowired
     private ProductVariantRepository productVariantRepository;
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
     private VoucherRepository voucherRepository;
     @Autowired
     private OrderService orderService;
@@ -266,21 +262,9 @@ public class OrderController extends ABasicController{
                 orderRepository.delete(order);
                 return apiMessageDto;
             }
-            orderDetail.setProductVariantId(productVariant.getId());
-            orderDetail.setAmount(item.getQuantity());
-            orderDetail.setPrice(item.getPrice());
-            orderDetail.setColor(productVariant.getColor());
-            orderDetail.setName(productVariant.getProduct().getName());
-            orderDetail.setProduct_Id(productVariant.getProduct().getId());
-            orderDetailRepository.save(orderDetail);
+            orderService.handleProduct(productVariant,item,orderDetail);
             totalPrice += item.getPrice();
 
-            productVariant.setTotalStock(productVariant.getTotalStock() -item.getQuantity());
-            productVariantRepository.save(productVariant);
-            Product product = productRepository.findById(productVariant.getProduct().getId()).orElse(null);
-            product.setSoldAmount(product.getSoldAmount() + item.getQuantity());
-            product.setTotalInStock(product.getTotalInStock() - item.getQuantity());
-            productRepository.save(product);
         }
         if (createOrderForm.getVoucherId()!=null)
         {
@@ -290,7 +274,6 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setResult(false);
                 apiMessageDto.setMessage("Not found voucher");
                 apiMessageDto.setCode(ErrorCode.VOUCHER_ERROR_NOT_FOUND);
-                orderRepository.delete(order);
                 return apiMessageDto;
             }
             if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
