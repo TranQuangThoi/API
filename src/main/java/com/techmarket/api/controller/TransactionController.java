@@ -50,7 +50,7 @@ public class TransactionController extends ABasicController{
         }
 
         try {
-            Payment payment = paymentService.createPayment(createPaymentForm);
+            Payment payment = paymentService.createPayment(createPaymentForm,order);
             for (Links link : payment.getLinks()) {
                 if (link.getRel().equals("approval_url")) {
                   apiMessageDto.setData(link.getHref());

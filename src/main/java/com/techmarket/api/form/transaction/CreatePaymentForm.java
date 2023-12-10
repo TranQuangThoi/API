@@ -12,9 +12,9 @@ public class CreatePaymentForm {
     @ApiModelProperty(name = "OrderId", required = true)
     private Long orderId;
 
-    @NotNull(message = "amount cant not be null")
-    @ApiModelProperty(name = "amount", required = true)
-    private Long amount;
+//    @NotNull(message = "amount cant not be null")
+//    @ApiModelProperty(name = "amount", required = true)
+//    private Long amount;
 
     private String urlSuccess;
     private String urlCancel;
