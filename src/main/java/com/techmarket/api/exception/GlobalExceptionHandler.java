@@ -117,14 +117,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity(new ApiResponse(HttpStatus.BAD_REQUEST, BAD_REQUEST, errors), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({ DataAccessException.class})
-    public ResponseEntity<ApiMessageDto<String>> databaseError(DataAccessException ex) {
-        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
-        apiMessageDto.setResult(false);
-        apiMessageDto.setMessage("Database Error");
-        apiMessageDto.setCode(ErrorCode.ERROR_DB_QUERY);
-        return new ResponseEntity<>(apiMessageDto, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler({ DataAccessException.class})
+//    public ResponseEntity<ApiMessageDto<String>> databaseError(DataAccessException ex) {
+//        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+//        apiMessageDto.setResult(false);
+//        apiMessageDto.setMessage("Database Error");
+//        apiMessageDto.setCode(ErrorCode.ERROR_DB_QUERY);
+//        return new ResponseEntity<>(apiMessageDto, HttpStatus.BAD_REQUEST);
+//    }
 
 
     @ExceptionHandler({TokenExceptionHandler.class})

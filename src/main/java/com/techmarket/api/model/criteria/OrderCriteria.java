@@ -25,6 +25,7 @@ public class OrderCriteria {
     private String receiver;
     private String phone;
     private Integer state;
+    private String orderCode;
 
     public Specification<Order> getCriteria() {
         return new Specification<Order>() {
@@ -62,6 +63,12 @@ public class OrderCriteria {
                 }
                 if (!StringUtils.isEmpty(getAddress())) {
                     predicates.add(cb.like(cb.lower(root.get("address")), "%" + getAddress().toLowerCase() + "%"));
+                }
+                if (!StringUtils.isEmpty(getOrderCode())) {
+                    predicates.add(cb.equal(
+                            cb.function("binary", String.class, root.get("orderCode")),
+                            cb.literal(getOrderCode())
+                    ));
                 }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }

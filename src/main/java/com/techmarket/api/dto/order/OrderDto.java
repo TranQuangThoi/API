@@ -22,6 +22,7 @@ public class OrderDto extends ABasicAdminDto {
     private Date expectedDeliveryDate;
     private Integer state;
     private Long voucherId;
+    private String orderCode;
 
 
 }

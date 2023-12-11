@@ -17,6 +17,7 @@ import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
 import com.techmarket.api.repository.*;
 import com.techmarket.api.service.OrderService;
+import com.techmarket.api.service.UserBaseOTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,8 @@ public class OrderController extends ABasicController{
     private VoucherRepository voucherRepository;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private UserBaseOTPService userBaseOTPService;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -237,6 +240,7 @@ public class OrderController extends ABasicController{
                 order.setUser(user);
             }
         }
+        order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
         Double totalPrice=0.0;
         for (CartDto item : cartItems)
