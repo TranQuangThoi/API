@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>,
     @Query("select od from OrderDetail od join od.order o "+
             "WHERE o.phone= :phone "+
             "AND o.id = :id")
-    Page<OrderDetail> findAllByOrderIdAndPhone(String phone,long id , Pageable pageable);
+    Page<OrderDetail> findAllByOrderIdAndPhone(@Param("phone") String phone, @Param("id") long id , Pageable pageable);
 
     List<OrderDetail> findAllByOrderId(Long id );
 
@@ -25,14 +26,14 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>,
             "AND o.state = :state " +
             "AND od.product_Id = :productId " +
             "AND od.isReviewed = false")
-    List<OrderDetail> findUnpaidOrderDetailsByUserIdAndProductId(Integer state,Long userId, Long productId);
+    List<OrderDetail> findUnpaidOrderDetailsByUserIdAndProductId(@Param("state") Integer state,@Param("userId") Long userId,@Param("productId") Long productId);
 
     @Query("SELECT od.product_Id FROM OrderDetail od " +
             "JOIN od.order o " +
             "WHERE o.user.id = :userId " +
             "AND o.state = :state " +
             "AND od.isReviewed = false")
-    List<Long> findProductIdUnrated(Integer state,Long userId);
+    List<Long> findProductIdUnrated(@Param("state") Integer state,@Param("userId") Long userId);
 
     @Query("SELECT od.product_Id, SUM(od.price) as totalPrice " +
             "FROM OrderDetail od " +
@@ -41,7 +42,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>,
             "AND o.isPaid = true " +
             "GROUP BY od.product_Id "+
             "ORDER BY totalPrice DESC")
-    Page<Object[]> calculatePriceProduct(Integer state, Pageable pageable);
+    Page<Object[]> calculatePriceProduct(@Param("state") Integer state, Pageable pageable);
 
 
 

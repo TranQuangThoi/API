@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -19,21 +20,21 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (od)) " +
             "FROM Order od " +
             "where  od.state= :state")
-    RevenueDto countAndSumRevenueTotal(Integer state);
+    RevenueDto countAndSumRevenueTotal(@Param("state") Integer state);
     @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (od)) " +
             "FROM Order od " +
             "where  od.state= :state "+
             "AND od.createdDate BETWEEN :startDate AND :endDate")
-    RevenueDto countAndSumRevenueByDate(Integer state,Date startDate ,Date endDate);
+    RevenueDto countAndSumRevenueByDate(@Param("state") Integer state,@Param("startDate") Date startDate ,@Param("endDate") Date endDate);
     @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueOfYearDto(SUM(od.totalMoney), MONTH(od.createdDate)) " +
             "FROM Order od " +
             "WHERE od.state = :state " +
             "AND YEAR(od.createdDate) = :year " +
             "GROUP BY MONTH(od.createdDate)")
-    List<RevenueOfYearDto> calculateYearRevenue(Integer state, Integer year);
+    List<RevenueOfYearDto> calculateYearRevenue(@Param("state") Integer state,@Param("year") Integer year);
 
     @Query("SELECT od FROM Order od where od.phone= :phone ORDER BY od.createdDate DESC")
-    Page<Order> findAllByPhone(String phone,Pageable pageable);
+    Page<Order> findAllByPhone(@Param("phone") String phone,Pageable pageable);
 
     Order findByPhoneAndId(String phone ,Long id);
 }
