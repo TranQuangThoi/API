@@ -3,8 +3,10 @@ package com.techmarket.api.controller;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
+import com.techmarket.api.dto.order.OrderForGuestDto;
 import com.techmarket.api.dto.orderDetail.OrderDetailDto;
 import com.techmarket.api.mapper.OrderDetailMapper;
+import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.model.OrderDetail;
 import com.techmarket.api.repository.OrderDetailRepository;
@@ -32,6 +34,8 @@ public class OrderDetailController {
 
     @Autowired
     private OrderDetailMapper orderDetailMapper;
+    @Autowired
+    private OrderMapper orderMapper;
 
     @GetMapping(value = "/get-by-order/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> getByOrder(@PathVariable("id") Long id, Pageable pageable) {
@@ -56,9 +60,8 @@ public class OrderDetailController {
         return apiMessageDto;
     }
     @GetMapping(value = "/get-by-phone", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> getByPhoneAndOrder(@RequestParam("phone") String phone, @RequestParam("orderId") Long orderId, Pageable pageable) {
-        ApiMessageDto<ResponseListDto<List<OrderDetailDto>>> apiMessageDto = new ApiMessageDto<>();
-        ResponseListDto<List<OrderDetailDto>> responseListDto = new ResponseListDto<>();
+    public ApiMessageDto<OrderForGuestDto> getByPhoneAndOrder(@RequestParam("phone") String phone, @RequestParam("orderId") Long orderId, Pageable pageable) {
+        ApiMessageDto<OrderForGuestDto> apiMessageDto = new ApiMessageDto<>();
         Order order = orderRepository.findByPhoneAndId(phone,orderId);
         if (order==null)
         {
@@ -67,14 +70,14 @@ public class OrderDetailController {
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-
+        OrderForGuestDto orderForGuestDto = new OrderForGuestDto();
+        orderForGuestDto.setOrderDto(orderMapper.fromOrderToDto(order));
         Page<OrderDetail> list = orderDetailRepository.findAllByOrderIdAndPhone(phone,orderId,pageable);
-        responseListDto.setContent(orderDetailMapper.fromEntityToListOrderDetailDto(list.getContent()));
-        responseListDto.setTotalElements(list.getTotalElements());
-        responseListDto.setTotalPages(list.getTotalPages());
-
+        orderForGuestDto.setContent(orderDetailMapper.fromEntityToListOrderDetailDto(list.getContent()));
+        orderForGuestDto.setTotalElements(list.getTotalElements());
+        orderForGuestDto.setTotalPages(list.getTotalPages());
         apiMessageDto.setMessage("get order detail success");
-        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setData(orderForGuestDto);
         return apiMessageDto;
     }
 }
