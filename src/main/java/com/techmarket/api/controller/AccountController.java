@@ -99,7 +99,7 @@ public class AccountController extends ABasicController{
         account.setUsername(createAccountAdminForm.getUsername());
         account.setPassword(passwordEncoder.encode(createAccountAdminForm.getPassword()));
         account.setFullName(createAccountAdminForm.getFullName());
-        account.setKind(UserBaseConstant.USER_KIND_ADMIN);
+        account.setKind(UserBaseConstant.USER_KIND_EMPLOYEE);
         account.setEmail(createAccountAdminForm.getEmail());
         account.setGroup(group);
         account.setStatus(createAccountAdminForm.getStatus());
