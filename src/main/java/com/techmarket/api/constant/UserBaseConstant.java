@@ -19,7 +19,7 @@ public class UserBaseConstant {
     public static final Integer NATION_KIND_DISTRICT = 2;
     public static final Integer NATION_KIND_COMMUNE = 3;
 
-    public static final Integer GROUP_KIND_ADMIN = 1;
+    public static final Integer GROUP_KIND_EMPLOYEE = 1;
     public static final Integer GROUP_KIND_MANAGER = 2;
     public static final Integer GROUP_KIND_USER=3;
 

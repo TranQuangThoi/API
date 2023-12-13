@@ -46,5 +46,6 @@ public class Order extends Auditable<String>{
     private Long voucherId;
     @Column(name = "Order_Code")
     private String orderCode;
+    private String email;
 
 }

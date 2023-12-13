@@ -38,6 +38,8 @@ public class CreateOrderForm {
     private String note;
     @ApiModelProperty(name = "voucherId")
     private Long voucherId;
+    @ApiModelProperty(name = "email")
+    private String email;
 
 
 }

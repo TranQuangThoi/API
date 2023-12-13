@@ -16,6 +16,7 @@ import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
 import com.techmarket.api.repository.*;
+import com.techmarket.api.service.EmailService;
 import com.techmarket.api.service.OrderService;
 import com.techmarket.api.service.UserBaseOTPService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -52,6 +54,8 @@ public class OrderController extends ABasicController{
     private OrderService orderService;
     @Autowired
     private UserBaseOTPService userBaseOTPService;
+    @Autowired
+    private EmailService emailService;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -208,8 +212,7 @@ public class OrderController extends ABasicController{
 
         @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
-            , HttpServletRequest request , HttpServletResponse response)
-    {
+            , HttpServletRequest request , HttpServletResponse response) throws MessagingException {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         List<CartDto> cartItems = cookie.getCartItemsFromCookie(request);
 
@@ -289,10 +292,14 @@ public class OrderController extends ABasicController{
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
-        if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
+        if (createOrderForm.getEmail()!=null)
         {
-
+            if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
+            {
+            emailService.sendOrderToEmail(cartItems,order,order.getEmail());
+            }
         }
+
         cookie.clearCartCookie(request,response);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;

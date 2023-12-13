@@ -21,6 +21,7 @@ public interface OrderMapper {
     @Mapping(source = "district",target = "district")
     @Mapping(source = "ward", target = "ward")
     @Mapping(source = "province",target = "province")
+    @Mapping(source = "email",target = "email")
     @Named("toProductEntity")
     @BeanMapping(ignoreByDefault = true)
     Order fromCreateOrderToEntity(CreateOrderForm createOrderForm);
