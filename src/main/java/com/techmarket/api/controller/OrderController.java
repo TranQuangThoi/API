@@ -289,6 +289,10 @@ public class OrderController extends ABasicController{
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
+        if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
+        {
+
+        }
         cookie.clearCartCookie(request,response);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;

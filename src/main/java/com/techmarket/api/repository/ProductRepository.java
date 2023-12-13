@@ -2,6 +2,7 @@ package com.techmarket.api.repository;
 
 import com.techmarket.api.model.Product;
 import org.hibernate.sql.Select;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -24,5 +25,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT p FROM Product p ORDER BY p.soldAmount DESC")
     List<Product> findTop10ProductsBySoldAmount(Pageable pageable);
+
+    @Query("SELECT p FROM Product p where p.soldAmount < :sold ORDER BY p.soldAmount DESC")
+    Page<Product> filterProductsBySalesVolume(@Param("sold") Integer sold , Pageable pageable);
+    @Query("SELECT p FROM Product p where p.soldAmount > :sold ORDER BY p.soldAmount DESC")
+    Page<Product> filterProductsBySalesVolumeWell(@Param("sold") Integer sold , Pageable pageable);
 
 }
