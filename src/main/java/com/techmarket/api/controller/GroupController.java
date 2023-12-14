@@ -38,9 +38,6 @@ public class GroupController extends ABasicController{
     @PostMapping(value = "/create", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('GR_C')")
     public ApiMessageDto<String> create(@Valid @RequestBody CreateGroupForm createGroupForm, BindingResult bindingResult) {
-        if(!isSuperAdmin()){
-            throw new UnauthorizationException("Not allowed create.");
-        }
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         Group group = groupRepository.findFirstByName(createGroupForm.getName());
         if(group != null){
@@ -69,9 +66,6 @@ public class GroupController extends ABasicController{
     @PutMapping(value = "/update", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('GR_U')")
     public ApiMessageDto<String> update(@Valid @RequestBody UpdateGroupForm updateGroupForm, BindingResult bindingResult) {
-        if(!isSuperAdmin()){
-            throw new UnauthorizationException("Not allowed update.");
-        }
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         Group group = groupRepository.findById(updateGroupForm.getId()).orElse(null);
         if(group == null){
@@ -105,9 +99,6 @@ public class GroupController extends ABasicController{
     @GetMapping(value = "/get/{id}", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('GR_V')")
     public ApiMessageDto<Group> get(@PathVariable("id")  Long id) {
-        if(!isSuperAdmin()){
-            throw new UnauthorizationException("Not allowed to get.");
-        }
         ApiMessageDto<Group> apiMessageDto = new ApiMessageDto<>();
         Group group =groupRepository.findById(id).orElse(null);
         apiMessageDto.setData(group);
@@ -118,9 +109,6 @@ public class GroupController extends ABasicController{
     @GetMapping(value = "/list", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('GR_L')")
     public ApiMessageDto<ResponseListDto<Group>> list(@RequestParam(required = true)  int kind, Pageable pageable) {
-        if(!isSuperAdmin()){
-            throw new UnauthorizationException("Not allowed list group.");
-        }
 
         ApiMessageDto<ResponseListDto<Group>> apiMessageDto = new ApiMessageDto<>();
         Page<Group> groups = groupRepository

@@ -275,20 +275,7 @@ public class OrderController extends ABasicController{
         }
         if (createOrderForm.getVoucherId()!=null)
         {
-            Voucher voucher = voucherRepository.findById(createOrderForm.getVoucherId()).orElse(null);
-            if (voucher==null)
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("Not found voucher");
-                apiMessageDto.setCode(ErrorCode.VOUCHER_ERROR_NOT_FOUND);
-                return apiMessageDto;
-            }
-            if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
-            {
-               order.setVoucherId(createOrderForm.getVoucherId());
-               voucher.setAmount(voucher.getAmount()-1);
-               voucherRepository.save(voucher);
-           }
+           orderService.handleVoucher(createOrderForm.getVoucherId(),order);
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);

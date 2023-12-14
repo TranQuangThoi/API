@@ -72,9 +72,6 @@ public class AccountController extends ABasicController{
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ACC_L')")
     public ApiResponse<ResponseListDto<Service>> list(AccountCriteria accountCriteria, Pageable pageable) {
-        if(!isSuperAdmin() ){
-            throw new UnauthorizationException("Not allowed to list career.");
-        }
         ApiResponse<ResponseListDto<Service>> apiMessageDto = new ApiResponse<>();
         Page<Account> careerList = accountRepository.findAll(accountCriteria.getSpecification() , pageable);
         ResponseListDto<Service> responseListDto = new ResponseListDto(careerList.getContent(), careerList.getTotalElements(), careerList.getTotalPages());

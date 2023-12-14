@@ -3,6 +3,7 @@ package com.techmarket.api.service;
 
 import com.techmarket.api.controller.ABasicController;
 import com.techmarket.api.cookie.cookie;
+import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.model.*;
 import com.techmarket.api.repository.*;
@@ -21,6 +22,8 @@ public class OrderService extends ABasicController {
     private OrderDetailRepository orderDetailRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private VoucherRepository voucherRepository;
 
     public void canelOrder(Long orderId)
     {
@@ -56,6 +59,17 @@ public class OrderService extends ABasicController {
         productRepository.save(product);
 
     }
+    public void handleVoucher(Long voucherId,Order order)
+    {
+        Voucher voucher = voucherRepository.findById(voucherId).orElse(null);
+        if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
+        {
+            order.setVoucherId(voucherId);
+            voucher.setAmount(voucher.getAmount()-1);
+            voucherRepository.save(voucher);
+        }
+    }
+
 
 }
 
