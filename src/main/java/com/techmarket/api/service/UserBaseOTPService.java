@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserBaseOTPService {
     public static final int TWO_HOUR = 2 * 60 * 60 * 1000;
     private final SecureRandom secureRandom;
+    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private List<Integer> numberRand = new ArrayList<>();
 
     private Map<String, Long> storeOrderSttForCheck = new ConcurrentHashMap<>();
@@ -28,6 +29,20 @@ public class UserBaseOTPService {
             otp.append(secureRandom.nextInt(9));
         }
         return otp.toString();
+    }
+    public synchronized String genCodeOrder(int maxLength) {
+        if (maxLength <= 0) {
+            throw new IllegalArgumentException("MaxLength should be greater than 0");
+        }
+
+        StringBuilder password = new StringBuilder(maxLength);
+
+        for (int i = 0; i < maxLength; i++) {
+            int randomIndex = secureRandom.nextInt(CHARACTERS.length());
+            password.append(CHARACTERS.charAt(randomIndex));
+        }
+
+        return password.toString();
     }
 
     public synchronized String orderStt(Long idStore){

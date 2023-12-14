@@ -19,6 +19,7 @@ import com.techmarket.api.model.Group;
 import com.techmarket.api.model.Service;
 import com.techmarket.api.model.criteria.AccountCriteria;
 import com.techmarket.api.repository.*;
+import com.techmarket.api.service.EmailService;
 import com.techmarket.api.service.UserBaseApiService;
 import com.techmarket.api.utils.AESUtils;
 import com.techmarket.api.utils.ConvertUtils;
@@ -33,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
@@ -64,13 +66,12 @@ public class AccountController extends ABasicController{
 
     @Autowired
     ServiceRepository serviceRepository;
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ACC_L')")
     public ApiResponse<ResponseListDto<Service>> list(AccountCriteria accountCriteria, Pageable pageable) {
-        if(!isSuperAdmin() ){
-            throw new UnauthorizationException("Not allowed to list career.");
-        }
         ApiResponse<ResponseListDto<Service>> apiMessageDto = new ApiResponse<>();
         Page<Account> careerList = accountRepository.findAll(accountCriteria.getSpecification() , pageable);
         ResponseListDto<Service> responseListDto = new ResponseListDto(careerList.getContent(), careerList.getTotalElements(), careerList.getTotalPages());
@@ -99,7 +100,7 @@ public class AccountController extends ABasicController{
         account.setUsername(createAccountAdminForm.getUsername());
         account.setPassword(passwordEncoder.encode(createAccountAdminForm.getPassword()));
         account.setFullName(createAccountAdminForm.getFullName());
-        account.setKind(UserBaseConstant.USER_KIND_ADMIN);
+        account.setKind(UserBaseConstant.USER_KIND_EMPLOYEE);
         account.setEmail(createAccountAdminForm.getEmail());
         account.setGroup(group);
         account.setStatus(createAccountAdminForm.getStatus());
@@ -234,7 +235,7 @@ public class AccountController extends ABasicController{
     }
 
     @PostMapping(value = "/request_forget_password", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<ForgetPasswordDto> requestForgetPassword(@Valid @RequestBody RequestForgetPasswordForm forgetForm, BindingResult bindingResult){
+    public ApiResponse<ForgetPasswordDto> requestForgetPassword(@Valid @RequestBody RequestForgetPasswordForm forgetForm, BindingResult bindingResult) throws MessagingException {
         ApiResponse<ForgetPasswordDto> apiMessageDto = new ApiResponse<>();
         Account account = accountRepository.findAccountByEmail(forgetForm.getEmail());
         if (account == null) {
@@ -251,7 +252,8 @@ public class AccountController extends ABasicController{
         accountRepository.save(account);
 
         //send email
-        userBaseApiService.sendEmail(account.getEmail(),"OTP: "+otp, "Reset password",false);
+//        userBaseApiService.sendEmail(account.getEmail(),"OTP: "+otp, "Reset password",false);
+        emailService.sendOtpToEmailForResetPass(account.getFullName(),account.getEmail(),otp);
 
         ForgetPasswordDto forgetPasswordDto = new ForgetPasswordDto();
         String hash = AESUtils.encrypt (account.getId()+";"+otp, true);

@@ -293,5 +293,36 @@ public class ProductController extends ABasicController{
         apiMessageDto.setMessage("get top 10 best saler");
         return apiMessageDto;
     }
+    @GetMapping(value = "/get-product-not-selling-well",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('PR_NSW')")
+    public ApiMessageDto<ResponseListDto<List<ProductDto>>> getProductNotSellingWell(@RequestParam("soldAmount") Integer soldAmount, Pageable pageable)
+    {
+        ApiMessageDto<ResponseListDto<List<ProductDto>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<ProductDto>> responseListDto = new ResponseListDto<>();
 
+        Page<Product> productList = productRepository.filterProductsBySalesVolume(soldAmount,pageable);
+
+        responseListDto.setContent(productMapper.fromEntityToListProductDto(productList.getContent()));
+        responseListDto.setTotalPages(productList.getTotalPages());
+        responseListDto.setTotalElements(productList.getTotalElements());
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("get product Not Selling Well success");
+        return apiMessageDto;
+    }
+    @GetMapping(value = "/get-product-selling-well",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('PR_SW')")
+    public ApiMessageDto<ResponseListDto<List<ProductDto>>> getProductSellingWell(@RequestParam("soldAmount") Integer soldAmount, Pageable pageable)
+    {
+        ApiMessageDto<ResponseListDto<List<ProductDto>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<ProductDto>> responseListDto = new ResponseListDto<>();
+
+        Page<Product> productList = productRepository.filterProductsBySalesVolumeWell(soldAmount,pageable);
+
+        responseListDto.setContent(productMapper.fromEntityToListProductDto(productList.getContent()));
+        responseListDto.setTotalPages(productList.getTotalPages());
+        responseListDto.setTotalElements(productList.getTotalElements());
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("get product Selling Well success");
+        return apiMessageDto;
+    }
 }

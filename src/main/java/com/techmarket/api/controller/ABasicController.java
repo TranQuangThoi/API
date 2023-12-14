@@ -44,6 +44,13 @@ public class ABasicController {
         }
         return false;
     }
+    public boolean isEmployee(){
+        UserBaseJwt userBaseJwt = userService.getAddInfoFromToken();
+        if(userBaseJwt !=null){
+            return Objects.equals(userBaseJwt.getUserKind(), UserBaseConstant.USER_KIND_EMPLOYEE);
+        }
+        return false;
+    }
     public boolean isUser(){
         UserBaseJwt userBaseJwt = userService.getAddInfoFromToken();
         if(userBaseJwt !=null){

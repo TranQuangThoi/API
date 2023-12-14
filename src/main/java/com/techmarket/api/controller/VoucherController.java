@@ -6,6 +6,7 @@ import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.product.ProductDto;
 import com.techmarket.api.dto.voucher.VoucherDto;
+import com.techmarket.api.exception.UnauthorizationException;
 import com.techmarket.api.form.product.CreateProductForm;
 import com.techmarket.api.form.product.UpdateProductForm;
 import com.techmarket.api.form.voucher.CreateVoucherForm;
@@ -17,6 +18,7 @@ import com.techmarket.api.model.Voucher;
 import com.techmarket.api.model.criteria.ProductCriteria;
 import com.techmarket.api.model.criteria.VourcherCriteria;
 import com.techmarket.api.repository.VoucherRepository;
+import com.techmarket.api.schedule.VoucherSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,12 +33,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/voucher")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class VoucherController {
+public class VoucherController extends ABasicController{
 
     @Autowired
     private VoucherRepository voucherRepository;
     @Autowired
     private VoucherMapper voucherMapper;
+    @Autowired
+    private VoucherSchedule voucherSchedule;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('VC_L')")
@@ -116,6 +120,16 @@ public class VoucherController {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         voucherRepository.save(voucherMapper.fromCreateFormToEntity(createVoucherForm));
         apiMessageDto.setMessage("create voucher success");
+        return apiMessageDto;
+    }
+    @PostMapping("/check-expired")
+    public ApiMessageDto<String> checkExpriredVoucher(){
+        if(!isEmployee() && !isShop()){
+            throw new UnauthorizationException("Not allowed check");
+        }
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        voucherSchedule.checkAndUpdateVoucherStatus();
+        apiMessageDto.setMessage("Set status locked successfully");
         return apiMessageDto;
     }
 

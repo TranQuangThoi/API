@@ -133,6 +133,7 @@ public class ErrorCode {
     public static final String ORDER_ERROR_NOT_FOUND = "ERROR-ORDER-0000";
     public static final String ORDER_ERROR_NOT_CANCEL = "ERROR-ORDER-0001";
     public static final String ORDER_ERROR_NOT_UPDATE = "ERROR-ORDER-0002";
+    public static final String ORDER_ERROR_CANCELED= "ERROR-ORDER-0003";
 
     /**
      * Starting error code REVIEW_ERROR

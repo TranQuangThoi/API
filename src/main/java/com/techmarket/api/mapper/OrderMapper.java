@@ -21,6 +21,7 @@ public interface OrderMapper {
     @Mapping(source = "district",target = "district")
     @Mapping(source = "ward", target = "ward")
     @Mapping(source = "province",target = "province")
+    @Mapping(source = "email",target = "email")
     @Named("toProductEntity")
     @BeanMapping(ignoreByDefault = true)
     Order fromCreateOrderToEntity(CreateOrderForm createOrderForm);
@@ -42,6 +43,7 @@ public interface OrderMapper {
     @Mapping(source = "state",target = "state")
     @Mapping(source = "expectedDeliveryDate",target = "expectedDeliveryDate")
     @Mapping(source = "voucherId",target = "voucherId")
+    @Mapping(source = "orderCode",target = "orderCode")
     @Named("fromOrderToDto")
     @BeanMapping(ignoreByDefault = true)
     OrderDto fromOrderToDto(Order order);
@@ -57,7 +59,6 @@ public interface OrderMapper {
     void fromUpdateToOrderEntity(UpdateOrder updateOrder, @MappingTarget Order order);
 
 
-    @Mapping(source = "state",target = "state")
     @Mapping(source = "note", target = "note")
     @Mapping(source = "address",target = "address")
     @Mapping(source = "phone", target = "phone")

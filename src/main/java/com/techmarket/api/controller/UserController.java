@@ -16,9 +16,11 @@ import com.techmarket.api.mapper.AccountMapper;
 import com.techmarket.api.mapper.UserMapper;
 import com.techmarket.api.model.Account;
 import com.techmarket.api.model.Group;
+import com.techmarket.api.model.Order;
 import com.techmarket.api.model.User;
 import com.techmarket.api.model.criteria.UserCriteria;
 import com.techmarket.api.repository.*;
+import com.techmarket.api.service.EmailService;
 import com.techmarket.api.service.UserBaseApiService;
 import com.techmarket.api.utils.AESUtils;
 import com.techmarket.api.utils.ConvertUtils;
@@ -35,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +48,8 @@ import java.util.List;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
 public class UserController extends ABasicController{
+    @Autowired
+    private OrderRepository orderRepository;
     @Autowired
     private ReviewRepository reviewRepository;
 
@@ -67,10 +72,11 @@ public class UserController extends ABasicController{
     private ServiceRepository serviceRepository;
     @Autowired
     UserBaseApiService userBaseApiService;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping(value = "/signup", produces= MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ForgetPasswordDto> create(@Valid @RequestBody SignUpUserForm signUpUserForm, BindingResult bindingResult)
-    {
+    public ApiMessageDto<ForgetPasswordDto> create(@Valid @RequestBody SignUpUserForm signUpUserForm, BindingResult bindingResult) throws MessagingException {
         ApiMessageDto<ForgetPasswordDto> apiMessageDto = new ApiMessageDto<>();
 
             Account accountByPhone = accountRepository.findAccountByPhone(signUpUserForm.getPhone());
@@ -98,7 +104,7 @@ public class UserController extends ABasicController{
         account.setKind(UserBaseConstant.USER_KIND_USER);
         Group group = groupRepository.findFirstByKind(UserBaseConstant.GROUP_KIND_USER);
         account.setGroup(group);
-        account.setStatus(UserBaseConstant.STATUS_LOCK);
+        account.setStatus(UserBaseConstant.STATUS_PENDING);
         accountRepository.save(account);
 
         User user = new User();
@@ -114,7 +120,8 @@ public class UserController extends ABasicController{
         accountRepository.save(account);
 
         //send email
-        userBaseApiService.sendEmail(account.getEmail(),"OTP: "+otp, "confirm",false);
+//        userBaseApiService.sendEmail(account.getEmail(),"OTP: "+otp, "confirm",false);
+        emailService.sendOtpToEmail(signUpUserForm.getFullName(),account.getEmail(),otp);
 
         ForgetPasswordDto forgetPasswordDto = new ForgetPasswordDto();
         String hash = AESUtils.encrypt (account.getId()+";"+otp, true);
@@ -212,6 +219,14 @@ public class UserController extends ABasicController{
             apiMessageDto.setResult(false);
             apiMessageDto.setMessage("Not allow delete super admin");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_ALLOW_DELETE_SUPPER_ADMIN);
+            return apiMessageDto;
+        }
+        List<Order> order = orderRepository.findAllByUserId(id);
+        if (order!=null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("just disabled");
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_UNKNOWN);
             return apiMessageDto;
         }
         reviewRepository.deleteAllByUserId(id);

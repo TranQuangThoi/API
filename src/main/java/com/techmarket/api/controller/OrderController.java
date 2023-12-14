@@ -8,6 +8,7 @@ import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.exception.UnauthorizationException;
+import com.techmarket.api.form.order.ChangeStateMyOrder;
 import com.techmarket.api.form.order.CreateOrderForm;
 import com.techmarket.api.form.order.UpdateMyOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
@@ -15,6 +16,9 @@ import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
 import com.techmarket.api.repository.*;
+import com.techmarket.api.service.EmailService;
+import com.techmarket.api.service.OrderService;
+import com.techmarket.api.service.UserBaseOTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -44,11 +49,13 @@ public class OrderController extends ABasicController{
     @Autowired
     private ProductVariantRepository productVariantRepository;
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
     private VoucherRepository voucherRepository;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserBaseOTPService userBaseOTPService;
+    @Autowired
+    private EmailService emailService;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,21 +133,16 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Customer has been canceled order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_CANCELED);
+            return apiMessageDto;
+        }
         if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
         {
-           List<OrderDetail> orderDetail = orderDetailRepository.findAllByOrderId(updateOrder.getId());
-           for (OrderDetail item : orderDetail)
-           {
-               ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
-               productVariant.setTotalStock(productVariant.getTotalStock() + item.getAmount());
-               Product product = productRepository.findById(item.getProduct_Id()).orElse(null);
-               product.setTotalInStock(product.getTotalInStock() + item.getAmount());
-               product.setSoldAmount(product.getSoldAmount() - item.getAmount());
-               productVariantRepository.save(productVariant);
-               productRepository.save(product);
-           }
-
-
+            orderService.canelOrder(updateOrder.getId());
         }
 
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
@@ -164,18 +166,11 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        if (!order.getState().equals(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION))
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED)
+                || order.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
         {
             apiMessageDto.setResult(false);
             apiMessageDto.setMessage("You cannot update your order");
-            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
-            return apiMessageDto;
-        }
-        if (!updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION) &&
-        !updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
-        {
-            apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("You cannot change to another state other than canceling the order");
             apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
             return apiMessageDto;
         }
@@ -184,10 +179,40 @@ public class OrderController extends ABasicController{
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;
     }
-    @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/cancel-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> cancelMyOrder(@Valid @RequestBody ChangeStateMyOrder changeStateMyOrder ,BindingResult bindingResult) {
+        if (!isUser())
+        {
+            throw new UnauthorizationException("Not allowed to update order.");
+        }
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+
+        Order order = orderRepository.findById(changeStateMyOrder.getId()).orElse(null);
+        if (order ==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        if (order.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED)
+                || order.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("This status cannot be updated once canceled or completed");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_UPDATE);
+            return apiMessageDto;
+        }
+        order.setState(UserBaseConstant.ORDER_STATE_CANCELED);
+        orderService.canelOrder(changeStateMyOrder.getId());
+        orderRepository.save(order);
+        apiMessageDto.setMessage("Cancel order success");
+        return apiMessageDto;
+    }
+
+        @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
-            , HttpServletRequest request , HttpServletResponse response)
-    {
+            , HttpServletRequest request , HttpServletResponse response) throws MessagingException {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         List<CartDto> cartItems = cookie.getCartItemsFromCookie(request);
 
@@ -218,6 +243,7 @@ public class OrderController extends ABasicController{
                 order.setUser(user);
             }
         }
+        order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
         Double totalPrice=0.0;
         for (CartDto item : cartItems)
@@ -232,6 +258,7 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setResult(false);
                 apiMessageDto.setMessage("Product variant sold out");
                 apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                orderRepository.delete(order);
                 return apiMessageDto;
             }
             if(productVariant.getTotalStock() < item.getQuantity())
@@ -239,43 +266,27 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setResult(false);
                 apiMessageDto.setMessage("product quantity has been exceeded ,Please reduce product quantity");
                 apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                orderRepository.delete(order);
                 return apiMessageDto;
             }
-            orderDetail.setProductVariantId(productVariant.getId());
-            orderDetail.setAmount(item.getQuantity());
-            orderDetail.setPrice(item.getPrice());
-            orderDetail.setColor(productVariant.getColor());
-            orderDetail.setName(productVariant.getProduct().getName());
-            orderDetail.setProduct_Id(productVariant.getProduct().getId());
-            orderDetailRepository.save(orderDetail);
+            orderService.handleProduct(productVariant,item,orderDetail);
             totalPrice += item.getPrice();
 
-            productVariant.setTotalStock(productVariant.getTotalStock() -item.getQuantity());
-            productVariantRepository.save(productVariant);
-            Product product = productRepository.findById(productVariant.getProduct().getId()).orElse(null);
-            product.setSoldAmount(product.getSoldAmount() + item.getQuantity());
-            product.setTotalInStock(product.getTotalInStock() - item.getQuantity());
-            productRepository.save(product);
         }
         if (createOrderForm.getVoucherId()!=null)
         {
-            Voucher voucher = voucherRepository.findById(createOrderForm.getVoucherId()).orElse(null);
-            if (voucher==null)
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("Not found voucher");
-                apiMessageDto.setCode(ErrorCode.VOUCHER_ERROR_NOT_FOUND);
-                return apiMessageDto;
-            }
-            if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
-            {
-               order.setVoucherId(createOrderForm.getVoucherId());
-               voucher.setAmount(voucher.getAmount()-1);
-               voucherRepository.save(voucher);
-           }
+           orderService.handleVoucher(createOrderForm.getVoucherId(),order);
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
+        if (createOrderForm.getEmail()!=null)
+        {
+            if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
+            {
+            emailService.sendOrderToEmail(cartItems,order,order.getEmail());
+            }
+        }
+
         cookie.clearCartCookie(request,response);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;
