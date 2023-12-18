@@ -80,7 +80,7 @@ public class AccountController extends ABasicController{
         return apiMessageDto;
     }
 
-    @PostMapping(value = "/create_admin", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/create_employee", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ACC_C_AD')")
     public ApiResponse<String> createAdmin(@Valid @RequestBody CreateAccountAdminForm createAccountAdminForm, BindingResult bindingResult) {
         ApiResponse<String> apiMessageDto = new ApiResponse<>();
@@ -107,7 +107,7 @@ public class AccountController extends ABasicController{
         account.setPhone(createAccountAdminForm.getPhone());
         accountRepository.save(account);
 
-        apiMessageDto.setMessage("Create account admin success");
+        apiMessageDto.setMessage("Create account employee success");
         return apiMessageDto;
 
     }

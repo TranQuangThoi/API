@@ -27,9 +27,8 @@ public class PaymentService {
         return payment.execute(apiContext, paymentExecute);
     }
     private String convertToUSD(Double amount){
-        //Exchange rate from USD  to VND: 1 USD = 24230 VND (20/12/2023)
         double convertCurrency = amount / 24230;
-        DecimalFormat decimalFormat = new DecimalFormat("#.##"); // Định dạng số thập phân với hai chữ số sau dấu thập phân
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
         return decimalFormat.format(convertCurrency);
     }
     public Payment createPayment(CreatePaymentForm createPaymentForm, Order order)throws PayPalRESTException
