@@ -116,19 +116,20 @@ public class ProductController extends ABasicController{
         return  apiMessageDto;
     }
     @GetMapping(value = "/auto-complete",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<ProductDto>>> ListAutoComplete(ProductCriteria productCriteria, Pageable pageable)
+    public ApiMessageDto<List<ProductDto>> ListAutoComplete(ProductCriteria productCriteria)
     {
-        ApiMessageDto<ResponseListDto<List<ProductDto>>> apiMessageDto = new ApiMessageDto<>();
-        ResponseListDto<List<ProductDto>> responseListDto = new ResponseListDto<>();
+        ApiMessageDto<List<ProductDto>> apiMessageDto = new ApiMessageDto<>();
+//        ResponseListDto<List<ProductDto>> responseListDto = new ResponseListDto<>();
+        List<Product> list = productRepository.findAll(productCriteria.getSpecification());
         productCriteria.setStatus(UserBaseConstant.STATUS_ACTIVE);
-//        Pageable pageable = PageRequest.of(0,10);
 
-        Page<Product> listProduct = productRepository.findAll(productCriteria.getSpecification(),pageable);
-        responseListDto.setContent(productMapper.fromEntityToListProductAutoDto(listProduct.getContent()));
-        responseListDto.setTotalPages(listProduct.getTotalPages());
-        responseListDto.setTotalElements(listProduct.getTotalElements());
-
-        apiMessageDto.setData(responseListDto);
+        List<ProductDto> listProduct = productMapper.fromEntityToListProductDto(list);
+        for (ProductDto item : listProduct)
+        {
+            List<ProductVariant> productVariantList = productVariantRepository.findAllByProductId(item.getId());
+            item.setListProductVariant(productVariantMapper.fromEntityToListProVariantDto(productVariantList));
+        }
+        apiMessageDto.setData(listProduct);
         apiMessageDto.setMessage("get list product success");
         return apiMessageDto;
     }

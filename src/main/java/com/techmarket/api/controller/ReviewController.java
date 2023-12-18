@@ -195,6 +195,7 @@ public class ReviewController extends ABasicController{
             orderDetailRepository.save(item);
         }
         product.setTotalReview(product.getTotalReview()+1);
+        product.setAvgStart(reviewRepository.avgStartOfProduct(createReviewForm.getProductId()));
         productRepository.save(product);
         apiMessageDto.setMessage("review success");
         return apiMessageDto;

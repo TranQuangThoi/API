@@ -22,4 +22,5 @@ public class ProductDto extends ABasicAdminDto{
     private BrandDto brandDto;
     private CategoryDto categoryDto;
     private List<ProductVariantDto> listProductVariant;
+    private Double avgStart;
 }

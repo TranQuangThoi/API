@@ -24,6 +24,7 @@ public class ProductCriteria {
     private Long categoryId;
     private String brandName;
     private String categoryName;
+    private String avgStart;
 
 
     public Specification<Product> getSpecification() {
@@ -79,6 +80,10 @@ public class ProductCriteria {
                 {
                     Join<Product, Brand> joinBrand = root.join("brand",JoinType.INNER);
                     predicates.add(cb.like(cb.lower(joinBrand.get("name")), "%"+ getBrandName().toLowerCase() +"%"));
+                }
+                if(getAvgStart()!=null)
+                {
+                    predicates.add(cb.equal(root.get("avgStart"),getAvgStart()));
                 }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }
