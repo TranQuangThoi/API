@@ -209,7 +209,8 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
-        @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
+
+    @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult ) throws MessagingException {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
 
@@ -238,31 +239,7 @@ public class OrderController extends ABasicController{
         }
         order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
-        Double totalPrice=0.0;
-        for (AddProductToOrder item : createOrderForm.getListOrderProduct())
-        {
-
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrder(order);
-            ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
-
-            orderService.handleOrder(productVariantCheck,item,orderDetail);
-            totalPrice += productVariantCheck.getPrice()* item.getQuantity();
-
-        }
-        if (createOrderForm.getVoucherId()!=null)
-        {
-           orderService.handleVoucher(createOrderForm.getVoucherId(),order);
-        }
-        order.setTotalMoney(totalPrice);
-        orderRepository.save(order);
-        if (createOrderForm.getEmail()!=null)
-        {
-            if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
-            {
-            emailService.sendOrderToEmail(createOrderForm.getListOrderProduct(),order,order.getEmail());
-            }
-        }
+        orderService.createOrder(createOrderForm,order);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;
     }

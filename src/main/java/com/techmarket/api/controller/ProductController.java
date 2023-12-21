@@ -11,10 +11,7 @@ import com.techmarket.api.form.productVariant.CreateProductVariantForm;
 import com.techmarket.api.form.productVariant.UpdateProductVariantForm;
 import com.techmarket.api.mapper.ProductMapper;
 import com.techmarket.api.mapper.ProductVariantMapper;
-import com.techmarket.api.model.Brand;
-import com.techmarket.api.model.Category;
-import com.techmarket.api.model.Product;
-import com.techmarket.api.model.ProductVariant;
+import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.ProductCriteria;
 import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +47,10 @@ public class ProductController extends ABasicController{
     private ProductVariantRepository productVariantRepository;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private CartRepository cartRepository;
+    @Autowired
+    private CartDetailRepository cartDetailRepository;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('PR_L')")
@@ -276,6 +277,11 @@ public class ProductController extends ABasicController{
             apiMessageDto.setMessage("Not found product");
             apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
             return apiMessageDto;
+        }
+        List<ProductVariant> productList = productVariantRepository.findAllByProductId(id);
+        for (ProductVariant item : productList)
+        {
+            cartDetailRepository.deleteAllByProductVariantId(item.getId());
         }
         reviewRepository.deleteAllByProductId(id);
         productVariantRepository.deleteAllByProductId(id);
