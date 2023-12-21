@@ -1,9 +1,12 @@
 package com.techmarket.api.service;
 
 import com.techmarket.api.dto.cart.CartDto;
+import com.techmarket.api.form.order.AddProductToOrder;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.model.OrderDetail;
+import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.repository.OrderDetailRepository;
+import com.techmarket.api.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,11 +16,14 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
 public class EmailService {
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
@@ -228,7 +234,7 @@ public class EmailService {
 
         emailSender.send(mimeMessage);
     }
-    public void sendOrderToEmail(List<CartDto> cartDtos, Order order, String email) throws MessagingException {
+    public void sendOrderToEmail(List<AddProductToOrder> cartDtos, Order order, String email) throws MessagingException {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
 
@@ -328,15 +334,16 @@ public class EmailService {
                 "        </tr>";
 
 // Thêm danh sách sản phẩm vào emailContent
-        for (CartDto item : cartDtos) {
+        for (AddProductToOrder item : cartDtos) {
             orderContent += String.format(
                     "<tr>" +
                             "    <td>%s</td>" +
                             "    <td>%d</td>" +
                             "    <td>%s</td>" +
                             "    <td>%.2f đ</td>" +
-                            "</tr>",
-                    item.getName(),
+                            "</tr>"
+                    ,
+                    item.getProductName(),
                     item.getQuantity(),
                     item.getColor(),
                     item.getPrice()

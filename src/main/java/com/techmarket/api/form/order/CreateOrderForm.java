@@ -1,5 +1,6 @@
 package com.techmarket.api.form.order;
 
+import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.validation.PaymentKind;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,6 +9,7 @@ import lombok.Data;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @ApiModel
@@ -42,6 +44,7 @@ public class CreateOrderForm {
     @ApiModelProperty(name = "email")
     @Email
     private String email;
+    private List<AddProductToOrder> listOrderProduct;
 
 
 }

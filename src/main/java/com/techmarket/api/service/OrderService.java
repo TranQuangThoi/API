@@ -2,9 +2,10 @@ package com.techmarket.api.service;
 
 
 import com.techmarket.api.controller.ABasicController;
-import com.techmarket.api.cookie.cookie;
+//import com.techmarket.api.cookie.cookie;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.cart.CartDto;
+import com.techmarket.api.form.order.AddProductToOrder;
 import com.techmarket.api.model.*;
 import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,21 +42,22 @@ public class OrderService extends ABasicController {
 
     }
 
-    public void handleProduct(ProductVariant productVariant,CartDto item,OrderDetail orderDetail)
+
+    public void handleOrder(ProductVariant productVariantInStock, AddProductToOrder addProductToOrder, OrderDetail orderDetail)
     {
-        orderDetail.setProductVariantId(productVariant.getId());
-        orderDetail.setAmount(item.getQuantity());
-        orderDetail.setPrice(item.getPrice());
-        orderDetail.setColor(productVariant.getColor());
-        orderDetail.setName(productVariant.getProduct().getName());
-        orderDetail.setProduct_Id(productVariant.getProduct().getId());
+        orderDetail.setProductVariantId(productVariantInStock.getId());
+        orderDetail.setAmount(addProductToOrder.getQuantity());
+        orderDetail.setPrice(productVariantInStock.getPrice()*addProductToOrder.getQuantity());
+        orderDetail.setColor(productVariantInStock.getColor());
+        orderDetail.setName(productVariantInStock.getProduct().getName());
+        orderDetail.setProduct_Id(productVariantInStock.getProduct().getId());
         orderDetailRepository.save(orderDetail);
 
-        productVariant.setTotalStock(productVariant.getTotalStock() -item.getQuantity());
-        productVariantRepository.save(productVariant);
-        Product product = productRepository.findById(productVariant.getProduct().getId()).orElse(null);
-        product.setSoldAmount(product.getSoldAmount() + item.getQuantity());
-        product.setTotalInStock(product.getTotalInStock() - item.getQuantity());
+        productVariantInStock.setTotalStock(productVariantInStock.getTotalStock() -addProductToOrder.getQuantity());
+        productVariantRepository.save(productVariantInStock);
+        Product product = productRepository.findById(productVariantInStock.getProduct().getId()).orElse(null);
+        product.setSoldAmount(product.getSoldAmount() + addProductToOrder.getQuantity());
+        product.setTotalInStock(product.getTotalInStock() - addProductToOrder.getQuantity());
         productRepository.save(product);
 
     }

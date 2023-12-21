@@ -1,17 +1,14 @@
 package com.techmarket.api.controller;
 
 import com.techmarket.api.constant.UserBaseConstant;
-import com.techmarket.api.cookie.cookie;
+//import com.techmarket.api.cookie.cookie;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.exception.UnauthorizationException;
-import com.techmarket.api.form.order.ChangeStateMyOrder;
-import com.techmarket.api.form.order.CreateOrderForm;
-import com.techmarket.api.form.order.UpdateMyOrderForm;
-import com.techmarket.api.form.order.UpdateOrder;
+import com.techmarket.api.form.order.*;
 import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
@@ -45,8 +42,6 @@ public class OrderController extends ABasicController{
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private cookie cookie;
-    @Autowired
     private ProductVariantRepository productVariantRepository;
     @Autowired
     private VoucherRepository voucherRepository;
@@ -56,6 +51,10 @@ public class OrderController extends ABasicController{
     private UserBaseOTPService userBaseOTPService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private CartDetailRepository cartDetailRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -211,18 +210,9 @@ public class OrderController extends ABasicController{
     }
 
         @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
-            , HttpServletRequest request , HttpServletResponse response) throws MessagingException {
+    public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult ) throws MessagingException {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
-        List<CartDto> cartItems = cookie.getCartItemsFromCookie(request);
 
-        if (cartItems.size()==0)
-        {
-            apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("Hiện không có sản phẩm nào trong giỏ hàng !!!");
-            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
-            return apiMessageDto;
-        }
         Order order = orderMapper.fromCreateOrderToEntity(createOrderForm);
         order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
 
@@ -241,36 +231,23 @@ public class OrderController extends ABasicController{
                     return apiMessageDto;
                 }
                 order.setUser(user);
+                Cart cart = cartRepository.findCartByUserId(user.getId());
+                cartDetailRepository.deleteAllByCartId(cart.getId());
             }
+
         }
         order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
         Double totalPrice=0.0;
-        for (CartDto item : cartItems)
+        for (AddProductToOrder item : createOrderForm.getListOrderProduct())
         {
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
+            ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
 
-            ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
-            if (productVariant.getTotalStock().equals(0))
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("Product variant sold out");
-                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
-                orderRepository.delete(order);
-                return apiMessageDto;
-            }
-            if(productVariant.getTotalStock() < item.getQuantity())
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("product quantity has been exceeded ,Please reduce product quantity");
-                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
-                orderRepository.delete(order);
-                return apiMessageDto;
-            }
-            orderService.handleProduct(productVariant,item,orderDetail);
-            totalPrice += item.getPrice();
+            orderService.handleOrder(productVariantCheck,item,orderDetail);
+            totalPrice += productVariantCheck.getPrice()* item.getQuantity();
 
         }
         if (createOrderForm.getVoucherId()!=null)
@@ -283,11 +260,9 @@ public class OrderController extends ABasicController{
         {
             if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
             {
-            emailService.sendOrderToEmail(cartItems,order,order.getEmail());
+            emailService.sendOrderToEmail(createOrderForm.getListOrderProduct(),order,order.getEmail());
             }
         }
-
-        cookie.clearCartCookie(request,response);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;
     }
