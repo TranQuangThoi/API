@@ -1,9 +1,11 @@
 package com.techmarket.api.mapper;
 
 import com.techmarket.api.dto.order.OrderDto;
+import com.techmarket.api.form.order.CreateOrderForUser;
 import com.techmarket.api.form.order.CreateOrderForm;
 import com.techmarket.api.form.order.UpdateMyOrderForm;
 import com.techmarket.api.form.order.UpdateOrder;
+import com.techmarket.api.model.Address;
 import com.techmarket.api.model.Order;
 
 import org.mapstruct.*;
@@ -25,6 +27,14 @@ public interface OrderMapper {
     @Named("toProductEntity")
     @BeanMapping(ignoreByDefault = true)
     Order fromCreateOrderToEntity(CreateOrderForm createOrderForm);
+
+    @Mapping(source = "note", target = "note")
+    @Mapping(source = "paymentMethod", target = "paymentMethod")
+    @Mapping(source = "receiver", target = "receiver")
+    @Mapping(source = "email",target = "email")
+    @BeanMapping(ignoreByDefault = true)
+    Order fromCreateOrderforUserToEntity(CreateOrderForUser createOrderForUser);
+
 
     @Mapping(source = "modifiedDate", target = "modifiedDate")
     @Mapping(source = "createdDate", target = "createdDate")

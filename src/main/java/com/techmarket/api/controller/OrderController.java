@@ -6,6 +6,7 @@ import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
+import com.techmarket.api.dto.order.CreateOrderDto;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.exception.UnauthorizationException;
 import com.techmarket.api.form.order.*;
@@ -55,6 +56,8 @@ public class OrderController extends ABasicController{
     private CartDetailRepository cartDetailRepository;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private AddressRepository addressRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -211,9 +214,10 @@ public class OrderController extends ABasicController{
 
 
     @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult ) throws MessagingException {
-        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+    public ApiMessageDto<CreateOrderDto> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult ) throws MessagingException {
+        ApiMessageDto<CreateOrderDto> apiMessageDto = new ApiMessageDto<>();
 
+        CreateOrderDto createOrderDto = new CreateOrderDto();
         Order order = orderMapper.fromCreateOrderToEntity(createOrderForm);
         order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
 
@@ -240,6 +244,47 @@ public class OrderController extends ABasicController{
         order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
         orderService.createOrder(createOrderForm,order);
+        createOrderDto.setOrderId(order.getId());
+        apiMessageDto.setData(createOrderDto);
+        apiMessageDto.setMessage("create order success");
+        return apiMessageDto;
+    }
+    @PostMapping(value = "/create-for-user",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> createOrderForUser(@Valid @RequestBody CreateOrderForUser createOrderForUser, BindingResult bindingResult ) throws MessagingException {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+
+        Order order = orderMapper.fromCreateOrderforUserToEntity(createOrderForUser);
+        Address address = addressRepository.findById(createOrderForUser.getAddressId()).orElse(null);
+        order.setProvince(address.getProvince().getName());
+        order.setWard(address.getWard().getName());
+        order.setDistrict(address.getDistrict().getName());
+        order.setAddress(address.getAddress());
+        order.setPhone(address.getPhone());
+        order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
+
+        String tokenExist = getCurrentToken();
+        if (tokenExist!=null)
+        {
+            Long accountId = getCurrentUser();
+            if (accountId!=null)
+            {
+                User user = userRepository.findByAccountId(accountId).orElse(null);
+                if (user==null)
+                {
+                    apiMessageDto.setResult(false);
+                    apiMessageDto.setMessage("Not found user");
+                    apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+                    return apiMessageDto;
+                }
+                order.setUser(user);
+                Cart cart = cartRepository.findCartByUserId(user.getId());
+                cartDetailRepository.deleteAllByCartId(cart.getId());
+            }
+
+        }
+        order.setOrderCode(userBaseOTPService.genCodeOrder(7));
+        orderRepository.save(order);
+        orderService.createOrderforUser(createOrderForUser,order);
         apiMessageDto.setMessage("create order success");
         return apiMessageDto;
     }
