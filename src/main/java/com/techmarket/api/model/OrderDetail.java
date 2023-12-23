@@ -31,5 +31,6 @@ public class OrderDetail extends Auditable<String>{
     private Double price;
     private Long product_Id;
     private Boolean isReviewed=false;
+    private String image;
 
 }

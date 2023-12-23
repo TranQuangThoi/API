@@ -26,8 +26,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -97,7 +95,7 @@ public class OrderController extends ABasicController{
     }
 
     @GetMapping(value = "/my-order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<OrderDto>>> getMyOrder(Pageable pageable) {
+    public ApiMessageDto<ResponseListDto<List<OrderDto>>> getMyOrder(OrderCriteria orderCriteria ,Pageable pageable) {
 
         ApiMessageDto<ResponseListDto<List<OrderDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<OrderDto>> responseListDto = new ResponseListDto<>();
@@ -111,7 +109,9 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        Page<Order> orderPage = orderRepository.findAllByUserId(user.getId(),pageable);
+//        Page<Order> orderPage = orderRepository.findAllByUserId(user.getId(),pageable);
+        orderCriteria.setUserId(user.getId());
+        Page<Order> orderPage = orderRepository.findAll(orderCriteria.getCriteria(),pageable);
         responseListDto.setContent(orderMapper.fromEntityToListOrderDto(orderPage.getContent()));
         responseListDto.setTotalPages(orderPage.getTotalPages());
         responseListDto.setTotalElements(orderPage.getTotalElements());

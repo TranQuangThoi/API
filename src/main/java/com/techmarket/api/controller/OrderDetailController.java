@@ -59,10 +59,10 @@ public class OrderDetailController {
         apiMessageDto.setData(responseListDto);
         return apiMessageDto;
     }
-    @GetMapping(value = "/get-by-phone-orderCode", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<OrderForGuestDto> getByPhoneAndOrder(@RequestParam("phone") String phone, @RequestParam("orderCode") String orderCode, Pageable pageable) {
+    @GetMapping(value = "/get-by-orderCode", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<OrderForGuestDto> getByPhoneAndOrder(@RequestParam("orderCode") String orderCode, Pageable pageable) {
         ApiMessageDto<OrderForGuestDto> apiMessageDto = new ApiMessageDto<>();
-        Order order = orderRepository.findByPhoneAndOrderCode(phone,orderCode);
+        Order order = orderRepository.findOrderByOrderCode(orderCode);
         if (order==null)
         {
             apiMessageDto.setResult(false);
@@ -72,7 +72,7 @@ public class OrderDetailController {
         }
         OrderForGuestDto orderForGuestDto = new OrderForGuestDto();
         orderForGuestDto.setOrderDto(orderMapper.fromOrderToDto(order));
-        Page<OrderDetail> list = orderDetailRepository.findAllByOrderIdAndPhone(phone,order.getId(),pageable);
+        Page<OrderDetail> list = orderDetailRepository.findAllByOrderId(order.getId(),pageable);
         orderForGuestDto.setContent(orderDetailMapper.fromEntityToListOrderDetailDto(list.getContent()));
         orderForGuestDto.setTotalElements(list.getTotalElements());
         orderForGuestDto.setTotalPages(list.getTotalPages());

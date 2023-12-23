@@ -119,6 +119,7 @@ public class OrderService extends ABasicController {
         orderDetail.setColor(productVariantInStock.getColor());
         orderDetail.setName(productVariantInStock.getProduct().getName());
         orderDetail.setProduct_Id(productVariantInStock.getProduct().getId());
+        orderDetail.setImage(productVariantInStock.getImage());
         orderDetailRepository.save(orderDetail);
 
         productVariantInStock.setTotalStock(productVariantInStock.getTotalStock() -addProductToOrder.getQuantity());
