@@ -281,12 +281,14 @@ public class AccountController extends ABasicController{
         Account account = accountRepository.findById(id).orElse(null);
         if (account == null ) {
             apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Không tìm thấy người dùng");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
 
         if(account.getAttemptCode() >= UserBaseConstant.MAX_ATTEMPT_FORGET_PWD){
             apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Chỉ được nhập tối đa 5 lần vui lòng bấm gửi lại OTP");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_LOCKED);
             return apiMessageDto;
         }
@@ -299,6 +301,7 @@ public class AccountController extends ABasicController{
             accountRepository.save(account);
 
             apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("OTP đã hết hiệu lực vui lòng bấm gửi lại OTP");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_OPT_INVALID);
             return apiMessageDto;
         }

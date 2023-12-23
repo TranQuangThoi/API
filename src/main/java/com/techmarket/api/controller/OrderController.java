@@ -250,9 +250,9 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
     @PostMapping(value = "/create-for-user",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> createOrderForUser(@Valid @RequestBody CreateOrderForUser createOrderForUser, BindingResult bindingResult ) throws MessagingException {
-        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
-
+    public ApiMessageDto<CreateOrderDto> createOrderForUser(@Valid @RequestBody CreateOrderForUser createOrderForUser, BindingResult bindingResult ) throws MessagingException {
+        ApiMessageDto<CreateOrderDto> apiMessageDto = new ApiMessageDto<>();
+        CreateOrderDto createOrderDto = new CreateOrderDto();
         Order order = orderMapper.fromCreateOrderforUserToEntity(createOrderForUser);
         Address address = addressRepository.findById(createOrderForUser.getAddressId()).orElse(null);
         order.setProvince(address.getProvince().getName());
@@ -285,7 +285,9 @@ public class OrderController extends ABasicController{
         order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
         orderService.createOrderforUser(createOrderForUser,order);
+        createOrderDto.setOrderId(order.getId());
         apiMessageDto.setMessage("create order success");
+        apiMessageDto.setData(createOrderDto);
         return apiMessageDto;
     }
 
