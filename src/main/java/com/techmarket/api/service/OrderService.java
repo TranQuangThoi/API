@@ -100,8 +100,15 @@ public class OrderService extends ABasicController {
                 throw new MessagingException("Not found product");
             }
 
+            Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
             handleOrder(productVariantCheck,item,orderDetail);
-            totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+            if (product.getSaleOff()!=0.0 && product.getSaleOff()!=null)
+            {
+                totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
+
+            }else {
+                totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+            }
 
         }
         if (createOrderForm.getVoucherId()!=null)

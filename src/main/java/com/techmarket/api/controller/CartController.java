@@ -211,6 +211,28 @@ public class CartController extends ABasicController{
         return apiMessageDto;
     }
 
+    @PutMapping(value = "/update-item-inCart", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('CART_U')")
+    public ApiMessageDto<String> updateItemInCart(@Valid @RequestBody UpdateCartDetailForm updateCartDetailForm, BindingResult bindingResult) {
+
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
+        Cart cart = cartRepository.findCartByUserId(user.getId());
+        if (cart==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("There are no products to update");
+            apiMessageDto.setCode(ErrorCode.CATEGORY_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+      CartDetail cartDetail = cartDetailRepository.findById(updateCartDetailForm.getCartDetailId()).orElse(null);
+      cartDetail.setQuantity(updateCartDetailForm.getQuantity());
+      cartDetailRepository.save(cartDetail);
+        apiMessageDto.setMessage("update cart success");
+        return apiMessageDto;
+    }
 
 
 

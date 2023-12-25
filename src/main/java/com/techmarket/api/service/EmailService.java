@@ -340,6 +340,7 @@ public class EmailService {
 
 // Thêm danh sách sản phẩm vào emailContent
         for (AddProductToOrder item : cartDtos) {
+            calculatePriceAdd(item);
             String formattedPrice = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(item.getPrice());
             orderContent += String.format(
                     "<tr>" +
@@ -526,12 +527,27 @@ public class EmailService {
         Double totalPrice=0.0;
         ProductVariant productVariantCheck = productVariantRepository.findById(orderDetail.getProductVariantId()).orElse(null);
         Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
-        if (product.getSaleOff()!=0.0)
+        if (product.getSaleOff()!=0.0 && product.getSaleOff()!=null)
         {
             totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*orderDetail.getAmount();
 
         }else {
             totalPrice += productVariantCheck.getPrice()*orderDetail.getAmount();
+        }
+        orderDetail.setPrice(totalPrice);
+    }
+    public void calculatePriceAdd(AddProductToOrder orderDetail)
+    {
+
+        Double totalPrice=0.0;
+        ProductVariant productVariantCheck = productVariantRepository.findById(orderDetail.getProductVariantId()).orElse(null);
+        Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+        if (product.getSaleOff()!=0.0 && product.getSaleOff()!=null)
+        {
+            totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*orderDetail.getQuantity();
+
+        }else {
+            totalPrice += productVariantCheck.getPrice()*orderDetail.getQuantity();
         }
         orderDetail.setPrice(totalPrice);
     }
