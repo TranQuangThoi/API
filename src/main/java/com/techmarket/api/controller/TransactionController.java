@@ -89,7 +89,7 @@ public class TransactionController extends ABasicController{
 
     @GetMapping("/deposit/success")
     public ApiMessageDto<String> successPay(@RequestParam("paymentId") String paymentId,
-                                                   @RequestParam("payerId") String payerId ,@RequestParam Long orderId) {
+                                                   @RequestParam("PayerID") String payerId ,@RequestParam Long orderId) {
 
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         try {

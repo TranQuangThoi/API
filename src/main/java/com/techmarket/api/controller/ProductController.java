@@ -127,7 +127,7 @@ public class ProductController extends ABasicController{
         List<ProductDto> listProduct = productMapper.fromEntityToListProductDto(list);
         for (ProductDto item : listProduct)
         {
-            List<ProductVariant> productVariantList = productVariantRepository.findAllByProductId(item.getId());
+            List<ProductVariant> productVariantList = productVariantRepository.findAllByProductIdAndStatus(item.getId(),UserBaseConstant.STATUS_ACTIVE);
             item.setListProductVariant(productVariantMapper.fromEntityToListProVariantDto(productVariantList));
         }
         apiMessageDto.setData(listProduct);
@@ -159,6 +159,13 @@ public class ProductController extends ABasicController{
         }
         Product product = productMapper.fromCreateProductToEntity(createProductForm);
         product.setCategory(categoryExist);
+        if (createProductForm.getSaleOff()==null)
+        {
+            product.setSaleOff(0.0);
+        }else {
+            product.setSaleOff(createProductForm.getSaleOff());
+        }
+
 
         if (createProductForm.getBrandId()!=null)
         {

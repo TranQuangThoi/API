@@ -3,7 +3,10 @@ package com.techmarket.api.service;
 import com.techmarket.api.form.order.AddProductToOrder;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.model.OrderDetail;
+import com.techmarket.api.model.Product;
+import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.repository.OrderDetailRepository;
+import com.techmarket.api.repository.ProductRepository;
 import com.techmarket.api.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,8 @@ import java.text.NumberFormat;
 @Service
 @Slf4j
 public class EmailService {
+    @Autowired
+    private ProductRepository productRepository;
     @Autowired
     private ProductVariantRepository productVariantRepository;
     @Autowired
@@ -478,6 +483,7 @@ public class EmailService {
 
 // Thêm danh sách sản phẩm vào emailContent
         for (OrderDetail item : orderDetails) {
+            calculatePrice(item);
             String formattedPrice = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(item.getPrice());
             orderContent += String.format(
                     "<tr>" +
@@ -514,4 +520,19 @@ public class EmailService {
     }
 
 
+    public void calculatePrice(OrderDetail orderDetail)
+    {
+
+        Double totalPrice=0.0;
+        ProductVariant productVariantCheck = productVariantRepository.findById(orderDetail.getProductVariantId()).orElse(null);
+        Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+        if (product.getSaleOff()!=0.0)
+        {
+            totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*orderDetail.getAmount();
+
+        }else {
+            totalPrice += productVariantCheck.getPrice()*orderDetail.getAmount();
+        }
+        orderDetail.setPrice(totalPrice);
+    }
 }

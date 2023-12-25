@@ -62,7 +62,15 @@ public class OrderService extends ABasicController {
             }
 
             handleOrder(productVariantCheck,item,orderDetail);
-            totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+            Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+            if (product.getSaleOff()!=0.0)
+            {
+                totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
+
+            }else {
+                totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+            }
+            item.setPrice(totalPrice);
 
         }
         if (createOrderForm.getVoucherId()!=null)

@@ -63,9 +63,10 @@ public class PaymentService {
         payment.setPayer(payer);
         payment.setTransactions(transactions);
 
+
         RedirectUrls redirectUrls = new RedirectUrls();
-        redirectUrls.setReturnUrl(createPaymentForm.getUrlSuccess());
-        redirectUrls.setCancelUrl(createPaymentForm.getUrlCancel());
+        redirectUrls.setReturnUrl(createPaymentForm.getUrlSuccess()+"?orderId=" + order.getId());
+        redirectUrls.setCancelUrl(createPaymentForm.getUrlCancel()+"?orderId=" + order.getId());
         payment.setRedirectUrls(redirectUrls);
         apiContext.setMaskRequestId(true);
         return payment.create(apiContext);

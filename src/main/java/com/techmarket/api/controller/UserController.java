@@ -228,7 +228,7 @@ public class UserController extends ABasicController{
         if (order!=null)
         {
             apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("just disabled");
+            apiMessageDto.setMessage("just disabled because user the user placed order");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_UNKNOWN);
             return apiMessageDto;
         }
