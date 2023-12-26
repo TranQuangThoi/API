@@ -108,6 +108,7 @@ public class OrderService extends ABasicController {
 
             }else {
                 totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+
             }
 
         }
