@@ -37,4 +37,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     Page<Order> findAllByPhone(@Param("phone") String phone,Pageable pageable);
 
     Order findOrderByOrderCode(String orderCode);
+
+    Integer countOrderByUserIdAndState(Long id,Integer state);
 }

@@ -2,6 +2,7 @@ package com.techmarket.api.service.impl;
 
 import com.techmarket.api.config.SecurityConstant;
 import com.techmarket.api.constant.UserBaseConstant;
+import com.techmarket.api.exception.BadRequestException;
 import com.techmarket.api.jwt.UserBaseJwt;
 import com.techmarket.api.model.Account;
 import com.techmarket.api.repository.AccountRepository;
@@ -109,30 +110,18 @@ public class UserServiceImpl implements UserDetailsService {
 
         Account user = accountRepository.findAccountByPhone(phone);
         boolean enabled = true;
-        try {
             if (user!=null && user.getStatus()!=1) {
                 log.error("User had been locked");
                 enabled = false;
-                throw new UsernameNotFoundException("account has not been activated");
+                throw new BadRequestException("Tài khoản đã bị khóa hoặc chưa được kích hoạt");
             }
-        }catch (UsernameNotFoundException e)
-        {
-            OAuth2AccessToken invalidPasswordToken = createErrorToken("tk has not been activated", "Tài khoản đã bị khóa hoặc chưa được kích hoạt");
-            return invalidPasswordToken;
-        }
-        try {
             if(user == null){
                 log.error("Invalid phone.");
-                throw new UsernameNotFoundException("Invalid phone.");
+                throw new BadRequestException("Tài khoản hoặt mật khẩu không chính xác");
             }else if (!passwordEncoder.matches(password, user.getPassword())) {
                 log.error("Invalid password.");
-                throw new UsernameNotFoundException("Invalid password.");
+                throw new BadRequestException("Tài khoản hoặc mật khẩu không chính xác");
             }
-
-        } catch (UsernameNotFoundException e) {
-            OAuth2AccessToken invalidPasswordToken = createErrorToken("invalid_password or invalid_phone", "Mật khẩu hoặc tài khoản không hợp lệ");
-            return invalidPasswordToken;
-        }
 
 
         requestParameters.put("phone", user.getPhone());

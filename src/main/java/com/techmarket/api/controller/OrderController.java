@@ -29,6 +29,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.validation.Valid;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -150,7 +154,16 @@ public class OrderController extends ABasicController{
         {
             orderService.canelOrder(updateOrder.getId());
         }
-
+        if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED) && order.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_BANK_TRANFER))
+        {
+            if (!order.getIsPaid())
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("This order has not been paid yet");
+                apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_PAID);
+                return apiMessageDto;
+            }
+        }
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
         orderRepository.save(order);
         apiMessageDto.setMessage("update status success");
@@ -306,6 +319,42 @@ public class OrderController extends ABasicController{
 
         apiMessageDto.setData(responseListDto);
         apiMessageDto.setMessage("get order success");
+        return apiMessageDto;
+    }
+
+    @GetMapping(value = "count-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<Integer> countMyOrder() {
+        ApiMessageDto<Integer> apiMessageDto = new ApiMessageDto<>();
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
+        if (user==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found user");
+            apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        Integer countMyOrder = orderRepository.countOrderByUserIdAndState(user.getId(),UserBaseConstant.ORDER_STATE_COMPLETED);
+        apiMessageDto.setData(countMyOrder);
+        apiMessageDto.setMessage("get order success");
+        return apiMessageDto;
+    }
+    @PutMapping(value = "/return-buy", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> updateMyOrder(@RequestParam Long orderId){
+
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        Order order = orderRepository.findById(orderId).orElse(null);
+        if (order==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found Order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
+        order.setCreatedDate(Date.from(Instant.now()));
+        orderRepository.save(order);
+        apiMessageDto.setMessage("return buy success");
         return apiMessageDto;
     }
 

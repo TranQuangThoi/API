@@ -129,17 +129,18 @@ public class CartController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        CartDetail cartDetailExisted = cartDetailRepository.findByProductVariantId(createCartDetailForm.getVariantId());
+        CartDetail cartDetailExisted = cartDetailRepository.findByProductVariantIdAndCartId(createCartDetailForm.getVariantId(),cart.getId());
         if (cartDetailExisted!=null)
         {
             cartDetailExisted.setQuantity(cartDetailExisted.getQuantity()+createCartDetailForm.getQuantity());
             cartDetailRepository.save(cartDetailExisted);
+        }else {
+            CartDetail cartDetail = new CartDetail();
+            cartDetail.setCart(cart);
+            cartDetail.setProductVariant(productVariant);
+            cartDetail.setQuantity(createCartDetailForm.getQuantity());
+            cartDetailRepository.save(cartDetail);
         }
-        CartDetail cartDetail = new CartDetail();
-        cartDetail.setCart(cart);
-        cartDetail.setProductVariant(productVariant);
-        cartDetail.setQuantity(createCartDetailForm.getQuantity());
-        cartDetailRepository.save(cartDetail);
         cart.setTotalProduct(cartDetailRepository.countCartDetailByCartId(cart.getId()));
         cartRepository.save(cart);
        apiMessageDto.setMessage("add product into cart success");

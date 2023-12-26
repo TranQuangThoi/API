@@ -52,7 +52,7 @@ public class OrderService extends ABasicController {
         Double totalPrice=0.0;
         for (AddProductToOrder item : createOrderForm.getListOrderProduct())
         {
-
+            Double totalPrice1Pro =0.0;
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
             ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
@@ -61,15 +61,18 @@ public class OrderService extends ABasicController {
                 throw new MessagingException("Not found product");
             }
 
-            handleOrder(productVariantCheck,item,orderDetail);
             Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
             if (product.getSaleOff()!=0.0)
             {
                 totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
+                totalPrice1Pro += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
+
 
             }else {
                 totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+                totalPrice1Pro += productVariantCheck.getPrice()* item.getQuantity();
             }
+            handleOrder(productVariantCheck,item,orderDetail,totalPrice1Pro);
             item.setPrice(totalPrice);
 
         }
@@ -91,7 +94,7 @@ public class OrderService extends ABasicController {
         Double totalPrice=0.0;
         for (AddProductToOrder item : createOrderForm.getListOrderProduct())
         {
-
+            Double totalPrice1Pro =0.0;
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
             ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
@@ -101,15 +104,18 @@ public class OrderService extends ABasicController {
             }
 
             Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
-            handleOrder(productVariantCheck,item,orderDetail);
             if (product.getSaleOff()!=0.0 && product.getSaleOff()!=null)
             {
                 totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
+                totalPrice1Pro += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
 
             }else {
                 totalPrice += productVariantCheck.getPrice()* item.getQuantity();
+                totalPrice1Pro += productVariantCheck.getPrice()* item.getQuantity();
 
             }
+            handleOrder(productVariantCheck,item,orderDetail,totalPrice1Pro);
+
 
         }
         if (createOrderForm.getVoucherId()!=null)
@@ -127,11 +133,11 @@ public class OrderService extends ABasicController {
         }
     }
 
-    public void handleOrder(ProductVariant productVariantInStock, AddProductToOrder addProductToOrder, OrderDetail orderDetail)
+    public void handleOrder(ProductVariant productVariantInStock, AddProductToOrder addProductToOrder, OrderDetail orderDetail , Double totalPrice)
     {
         orderDetail.setProductVariantId(productVariantInStock.getId());
         orderDetail.setAmount(addProductToOrder.getQuantity());
-        orderDetail.setPrice(productVariantInStock.getPrice()*addProductToOrder.getQuantity());
+        orderDetail.setPrice(totalPrice);
         orderDetail.setColor(productVariantInStock.getColor());
         orderDetail.setName(productVariantInStock.getProduct().getName());
         orderDetail.setProduct_Id(productVariantInStock.getProduct().getId());
