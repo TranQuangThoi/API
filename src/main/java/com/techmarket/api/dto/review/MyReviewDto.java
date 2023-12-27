@@ -10,4 +10,9 @@ public class MyReviewDto extends ABasicAdminDto {
     private String productName;
     private Long  productId;
     private Integer star;
+    private String image;
+    private String color;
+    private Double price;
+    private Long orderDetail;
+
 }

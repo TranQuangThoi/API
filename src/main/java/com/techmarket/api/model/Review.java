@@ -31,4 +31,9 @@ public class Review extends Auditable<String>{
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    private Long orderDetail;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Review parentId;
 }

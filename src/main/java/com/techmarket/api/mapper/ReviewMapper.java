@@ -14,6 +14,7 @@ public interface ReviewMapper {
 
     @Mapping(source = "star", target = "star")
     @Mapping(source = "message", target = "message")
+    @Mapping(source = "orderDetailId",target = "orderDetail")
     @BeanMapping(ignoreByDefault = true)
     @Named("adminCreateMapping")
     Review fromCreateFormToEntity(CreateReviewForm createForm);
@@ -42,10 +43,13 @@ public interface ReviewMapper {
     @Mapping(source = "createdDate", target = "createdDate")
     @Mapping(source = "product.name",target = "productName")
     @Mapping(source = "product.id",target = "productId")
+    @Mapping(source = "product.image",target = "image")
+    @Mapping(source = "orderDetail",target = "orderDetail")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToGetMyReviewDto")
     MyReviewDto fromEntityToGetMyDto(Review review);
     @IterableMapping(elementTargetType = MyReviewDto.class, qualifiedByName = "fromEntityToGetMyReviewDto")
-    List<MyReviewDto> fromEntityToGetMyReviewDtoList(List<Review> reviews);
+    List<MyReviewDto>
+    fromEntityToGetMyReviewDtoList(List<Review> reviews);
 
 }
