@@ -1,17 +1,15 @@
 package com.techmarket.api.controller;
 
 import com.techmarket.api.constant.UserBaseConstant;
-import com.techmarket.api.cookie.cookie;
+//import com.techmarket.api.cookie.cookie;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
+import com.techmarket.api.dto.order.CreateOrderDto;
 import com.techmarket.api.dto.order.OrderDto;
 import com.techmarket.api.exception.UnauthorizationException;
-import com.techmarket.api.form.order.ChangeStateMyOrder;
-import com.techmarket.api.form.order.CreateOrderForm;
-import com.techmarket.api.form.order.UpdateMyOrderForm;
-import com.techmarket.api.form.order.UpdateOrder;
+import com.techmarket.api.form.order.*;
 import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
@@ -21,16 +19,20 @@ import com.techmarket.api.service.OrderService;
 import com.techmarket.api.service.UserBaseOTPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -45,8 +47,6 @@ public class OrderController extends ABasicController{
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private cookie cookie;
-    @Autowired
     private ProductVariantRepository productVariantRepository;
     @Autowired
     private VoucherRepository voucherRepository;
@@ -56,6 +56,12 @@ public class OrderController extends ABasicController{
     private UserBaseOTPService userBaseOTPService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private CartDetailRepository cartDetailRepository;
+    @Autowired
+    private CartRepository cartRepository;
+    @Autowired
+    private AddressRepository addressRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -64,6 +70,7 @@ public class OrderController extends ABasicController{
 
         ApiMessageDto<ResponseListDto<List<OrderDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<OrderDto>> responseListDto = new ResponseListDto<>();
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdDate").descending());
         Page<Order> listOrder = orderRepository.findAll(orderCriteria.getCriteria(),pageable);
         responseListDto.setContent(orderMapper.fromEntityToListOrderDto(listOrder.getContent()));
         responseListDto.setTotalPages(listOrder.getTotalPages());
@@ -95,7 +102,7 @@ public class OrderController extends ABasicController{
     }
 
     @GetMapping(value = "/my-order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<OrderDto>>> getMyOrder(Pageable pageable) {
+    public ApiMessageDto<ResponseListDto<List<OrderDto>>> getMyOrder(OrderCriteria orderCriteria ,Pageable pageable) {
 
         ApiMessageDto<ResponseListDto<List<OrderDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<OrderDto>> responseListDto = new ResponseListDto<>();
@@ -109,7 +116,10 @@ public class OrderController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        Page<Order> orderPage = orderRepository.findAllByUserId(user.getId(),pageable);
+//        Page<Order> orderPage = orderRepository.findAllByUserId(user.getId(),pageable);
+        orderCriteria.setUserId(user.getId());
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdDate").descending());
+        Page<Order> orderPage = orderRepository.findAll(orderCriteria.getCriteria(),pageable);
         responseListDto.setContent(orderMapper.fromEntityToListOrderDto(orderPage.getContent()));
         responseListDto.setTotalPages(orderPage.getTotalPages());
         responseListDto.setTotalElements(orderPage.getTotalElements());
@@ -144,7 +154,16 @@ public class OrderController extends ABasicController{
         {
             orderService.canelOrder(updateOrder.getId());
         }
-
+        if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED) && order.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_BANK_TRANFER))
+        {
+            if (!order.getIsPaid())
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("This order has not been paid yet");
+                apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_PAID);
+                return apiMessageDto;
+            }
+        }
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
         orderRepository.save(order);
         apiMessageDto.setMessage("update status success");
@@ -210,19 +229,12 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
-        @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult
-            , HttpServletRequest request , HttpServletResponse response) throws MessagingException {
-        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
-        List<CartDto> cartItems = cookie.getCartItemsFromCookie(request);
 
-        if (cartItems.size()==0)
-        {
-            apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("Hiện không có sản phẩm nào trong giỏ hàng !!!");
-            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
-            return apiMessageDto;
-        }
+    @PostMapping(value = "/create",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<CreateOrderDto> createOrder(@Valid @RequestBody CreateOrderForm createOrderForm, BindingResult bindingResult ) throws MessagingException {
+        ApiMessageDto<CreateOrderDto> apiMessageDto = new ApiMessageDto<>();
+
+        CreateOrderDto createOrderDto = new CreateOrderDto();
         Order order = orderMapper.fromCreateOrderToEntity(createOrderForm);
         order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
 
@@ -241,54 +253,58 @@ public class OrderController extends ABasicController{
                     return apiMessageDto;
                 }
                 order.setUser(user);
+                Cart cart = cartRepository.findCartByUserId(user.getId());
+                cartDetailRepository.deleteAllByCartId(cart.getId());
             }
+
         }
         order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
-        Double totalPrice=0.0;
-        for (CartDto item : cartItems)
-        {
-
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrder(order);
-
-            ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
-            if (productVariant.getTotalStock().equals(0))
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("Product variant sold out");
-                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
-                orderRepository.delete(order);
-                return apiMessageDto;
-            }
-            if(productVariant.getTotalStock() < item.getQuantity())
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("product quantity has been exceeded ,Please reduce product quantity");
-                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
-                orderRepository.delete(order);
-                return apiMessageDto;
-            }
-            orderService.handleProduct(productVariant,item,orderDetail);
-            totalPrice += item.getPrice();
-
-        }
-        if (createOrderForm.getVoucherId()!=null)
-        {
-           orderService.handleVoucher(createOrderForm.getVoucherId(),order);
-        }
-        order.setTotalMoney(totalPrice);
-        orderRepository.save(order);
-        if (createOrderForm.getEmail()!=null)
-        {
-            if (createOrderForm.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_CASH))
-            {
-            emailService.sendOrderToEmail(cartItems,order,order.getEmail());
-            }
-        }
-
-        cookie.clearCartCookie(request,response);
+        orderService.createOrder(createOrderForm,order);
+        createOrderDto.setOrderId(order.getId());
+        apiMessageDto.setData(createOrderDto);
         apiMessageDto.setMessage("create order success");
+        return apiMessageDto;
+    }
+    @PostMapping(value = "/create-for-user",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<CreateOrderDto> createOrderForUser(@Valid @RequestBody CreateOrderForUser createOrderForUser, BindingResult bindingResult ) throws MessagingException {
+        ApiMessageDto<CreateOrderDto> apiMessageDto = new ApiMessageDto<>();
+        CreateOrderDto createOrderDto = new CreateOrderDto();
+        Order order = orderMapper.fromCreateOrderforUserToEntity(createOrderForUser);
+        Address address = addressRepository.findById(createOrderForUser.getAddressId()).orElse(null);
+        order.setProvince(address.getProvince().getName());
+        order.setWard(address.getWard().getName());
+        order.setDistrict(address.getDistrict().getName());
+        order.setAddress(address.getAddress());
+        order.setPhone(address.getPhone());
+        order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
+
+        String tokenExist = getCurrentToken();
+        if (tokenExist!=null)
+        {
+            Long accountId = getCurrentUser();
+            if (accountId!=null)
+            {
+                User user = userRepository.findByAccountId(accountId).orElse(null);
+                if (user==null)
+                {
+                    apiMessageDto.setResult(false);
+                    apiMessageDto.setMessage("Not found user");
+                    apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+                    return apiMessageDto;
+                }
+                order.setUser(user);
+                Cart cart = cartRepository.findCartByUserId(user.getId());
+                cartDetailRepository.deleteAllByCartId(cart.getId());
+            }
+
+        }
+        order.setOrderCode(userBaseOTPService.genCodeOrder(7));
+        orderRepository.save(order);
+        orderService.createOrderforUser(createOrderForUser,order);
+        createOrderDto.setOrderId(order.getId());
+        apiMessageDto.setMessage("create order success");
+        apiMessageDto.setData(createOrderDto);
         return apiMessageDto;
     }
 
@@ -303,6 +319,42 @@ public class OrderController extends ABasicController{
 
         apiMessageDto.setData(responseListDto);
         apiMessageDto.setMessage("get order success");
+        return apiMessageDto;
+    }
+
+    @GetMapping(value = "count-my-order", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<Integer> countMyOrder() {
+        ApiMessageDto<Integer> apiMessageDto = new ApiMessageDto<>();
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
+        if (user==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found user");
+            apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        Integer countMyOrder = orderRepository.countOrderByUserIdAndState(user.getId(),UserBaseConstant.ORDER_STATE_COMPLETED);
+        apiMessageDto.setData(countMyOrder);
+        apiMessageDto.setMessage("get order success");
+        return apiMessageDto;
+    }
+    @PutMapping(value = "/return-buy", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> updateMyOrder(@RequestParam Long orderId){
+
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        Order order = orderRepository.findById(orderId).orElse(null);
+        if (order==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found Order");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        order.setState(UserBaseConstant.ORDER_STATE_PENDING_CONFIRMATION);
+        order.setCreatedDate(Date.from(Instant.now()));
+        orderRepository.save(order);
+        apiMessageDto.setMessage("return buy success");
         return apiMessageDto;
     }
 

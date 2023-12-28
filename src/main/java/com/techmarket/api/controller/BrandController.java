@@ -80,12 +80,12 @@ public class BrandController extends ABasicController{
     }
 
     @GetMapping(value = "/auto-complete",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<BrandDto>>> ListAutoComplete(BrandCriteria brandCriteria)
+    public ApiMessageDto<ResponseListDto<List<BrandDto>>> ListAutoComplete(BrandCriteria brandCriteria ,Pageable pageable)
     {
         ApiMessageDto<ResponseListDto<List<BrandDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<BrandDto>> responseListDto = new ResponseListDto<>();
         brandCriteria.setStatus(UserBaseConstant.STATUS_ACTIVE);
-        Pageable pageable = PageRequest.of(0,10);
+//        Pageable pageable = PageRequest.of(0,10);
 
         Page<Brand> listBrand =brandRepository.findAll(brandCriteria.getSpecification(),pageable);
         responseListDto.setContent(brandMapper.fromEntityToListBrandDtoAuto(listBrand.getContent()));

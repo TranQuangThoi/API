@@ -7,9 +7,6 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 @Data
 public class CreateReviewForm {
-    @NotNull(message = "productId can not empty")
-    @ApiModelProperty(name = "productId", required = true)
-    private Long productId;
 
     @NotNull(message = "star cannot be null")
     @ApiModelProperty(name = "star", required = true)
@@ -18,4 +15,7 @@ public class CreateReviewForm {
 
     @ApiModelProperty(name = "message")
     private String message;
+    @NotNull(message = "orderDetailId cannot be null")
+    @ApiModelProperty(name = "orderDetailId" ,required = true)
+    private Long orderDetailId;
 }

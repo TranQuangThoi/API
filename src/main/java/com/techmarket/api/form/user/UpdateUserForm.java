@@ -28,4 +28,7 @@ public class UpdateUserForm {
     private String password;
     @ApiModelProperty(name = "avatarPath")
     private String avatarPath;
+    @ApiModelProperty(name = "status")
+    private int status;
+
 }

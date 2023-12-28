@@ -24,6 +24,7 @@ public interface AccountMapper {
     @Mapping(source = "lastLogin", target = "lastLogin")
     @Mapping(source = "avatarPath", target = "avatar")
     @Mapping(source = "isSuperAdmin", target = "isSuperAdmin")
+    @Mapping(source = "status",target = "status")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromAccountToDto")
     AccountDto fromAccountToDto(Account account);
@@ -50,6 +51,7 @@ public interface AccountMapper {
     @Mapping(source = "email",target = "email")
     @Mapping(source = "fullName",target = "fullName")
     @Mapping(source = "avatarPath",target = "avatarPath")
+    @Mapping(source = "status",target = "status")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateUserFormToEntity(UpdateUserForm updateUserForm, @MappingTarget Account account );
 

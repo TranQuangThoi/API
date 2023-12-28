@@ -6,11 +6,9 @@ import io.micrometer.core.instrument.util.StringUtils;
 import lombok.Data;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -26,6 +24,7 @@ public class OrderCriteria {
     private String phone;
     private Integer state;
     private String orderCode;
+    private Date createDate;
 
     public Specification<Order> getCriteria() {
         return new Specification<Order>() {
@@ -69,6 +68,24 @@ public class OrderCriteria {
                             cb.function("binary", String.class, root.get("orderCode")),
                             cb.literal(getOrderCode())
                     ));
+                }
+                if (getCreateDate() != null) {
+                    Expression<Date> createDateExpression = root.get("createdDate");
+                    Expression<Date> createDateToCompare = cb.literal(getCreateDate());
+
+                    // Lấy chỉ ngày, tháng và năm từ createDateExpression và createDateToCompare
+                    Expression<Date> createDateExpressionDateOnly = cb.function(
+                            "DATE",
+                            Date.class,
+                            createDateExpression
+                    );
+                    Expression<Date> createDateToCompareDateOnly = cb.function(
+                            "DATE",
+                            Date.class,
+                            createDateToCompare
+                    );
+
+                    predicates.add(cb.equal(createDateExpressionDateOnly, createDateToCompareDateOnly));
                 }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }

@@ -10,6 +10,7 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     public Account findAccountByUsername(String username);
     public Account findAccountByEmail(String email);
+    public Account findAccountByPhoneAndStatus(String phone,Integer status);
     public Account findAccountByPhone(String phone);
     public Account findAccountByResetPwdCode(String resetPwdCode);
     public Account findAccountByEmailOrUsername(String email, String username);

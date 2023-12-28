@@ -26,7 +26,8 @@ public class Product extends Auditable<String>{
     private Integer totalReview=0;
     private Double saleOff;
     private Integer soldAmount=0;
-
+    @Column(columnDefinition = "DOUBLE DEFAULT 0")
+    private double avgStart;
     @ManyToOne
     @JoinColumn(name = "brand_id")
     private Brand brand;

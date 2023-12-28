@@ -1,14 +1,13 @@
 package com.techmarket.api.model.criteria;
 
+import com.techmarket.api.model.Brand;
+import com.techmarket.api.model.Category;
 import com.techmarket.api.model.Product;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 @Data
@@ -23,6 +22,10 @@ public class ProductCriteria {
     private Integer totalInStock;
     private Long brandId;
     private Long categoryId;
+    private String brandName;
+    private String categoryName;
+    private String avgStart;
+
 
     public Specification<Product> getSpecification() {
         return new Specification<Product>() {
@@ -67,6 +70,20 @@ public class ProductCriteria {
                 if(getTotalInStock()!=null)
                 {
                     predicates.add(cb.equal(root.get("totalInStock"),getTotalInStock()));
+                }
+                if (!StringUtils.isBlank(getCategoryName()))
+                {
+                    Join<Product, Category> joinCategory = root.join("category",JoinType.INNER);
+                    predicates.add(cb.like(cb.lower(joinCategory.get("name")), "%"+ getCategoryName().toLowerCase() +"%"));
+                }
+                if (!StringUtils.isBlank(getBrandName()))
+                {
+                    Join<Product, Brand> joinBrand = root.join("brand",JoinType.INNER);
+                    predicates.add(cb.like(cb.lower(joinBrand.get("name")), "%"+ getBrandName().toLowerCase() +"%"));
+                }
+                if(getAvgStart()!=null)
+                {
+                    predicates.add(cb.equal(root.get("avgStart"),getAvgStart()));
                 }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }

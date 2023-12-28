@@ -147,12 +147,14 @@ public class UserController extends ABasicController{
         Account account = accountRepository.findById(id).orElse(null);
         if (account == null ) {
             apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Không tìm thấy người dùng");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
 
         if(account.getAttemptCode() >= UserBaseConstant.MAX_ATTEMPT_FORGET_PWD){
             apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Chỉ được nhập tối đa 5 lần vui lòng bấm gửi lại OTP");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_LOCKED);
             return apiMessageDto;
         }
@@ -165,6 +167,7 @@ public class UserController extends ABasicController{
             accountRepository.save(account);
 
             apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("OTP đã hết hiệu lực vui lòng bấm gửi lại OTP");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_OPT_INVALID);
             return apiMessageDto;
         }
@@ -225,7 +228,7 @@ public class UserController extends ABasicController{
         if (order!=null)
         {
             apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("just disabled");
+            apiMessageDto.setMessage("just disabled because user the user placed order");
             apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_UNKNOWN);
             return apiMessageDto;
         }

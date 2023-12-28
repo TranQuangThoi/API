@@ -1,9 +1,13 @@
 package com.techmarket.api.service;
 
-import com.techmarket.api.dto.cart.CartDto;
+import com.techmarket.api.form.order.AddProductToOrder;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.model.OrderDetail;
+import com.techmarket.api.model.Product;
+import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.repository.OrderDetailRepository;
+import com.techmarket.api.repository.ProductRepository;
+import com.techmarket.api.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,16 +17,23 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.List;
+import java.text.NumberFormat;
 
 @Service
 @Slf4j
 public class EmailService {
     @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
+    @Autowired
     private OrderDetailRepository orderDetailRepository;
 
     @Autowired
     private JavaMailSender emailSender;
+
 
     public void sendEmail(String email, String msg, String subject, boolean html) {
         try {
@@ -45,7 +56,7 @@ public class EmailService {
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
 
         mimeMessageHelper.setTo(email);
-        mimeMessageHelper.setSubject("Verify OTP");
+        mimeMessageHelper.setSubject("Mã xác nhận");
 
         String emailContent = "<html>" +
                 "<head>" +
@@ -117,15 +128,15 @@ public class EmailService {
                 "<body>" +
                 "    <div class=\"container\">" +
                 "        <div class=\"fullName\">Hello %s</div>" +
-                "        <h1>OTP Verification</h1>" +
-                "        <p>Thank you for registering with us. Your One Time Password (OTP) is:</p>" +
+                "        <h1>Mã xác nhận</h1>" +
+                "        <p>Cảm ơn vì đăng ký với chúng tôi.Mã xác nhận (OTP) của bạn là:</p>" +
                 "        <div class=\"otp\">%s</div>" +
-                "        <p>Please use this OTP to complete your account verification.</p>" +
-                "        <p><strong>Thank you for choosing us!</strong></p>" +
+                "        <p>Vui lòng sử dụng OTP này để hoàn tất xác minh tài khoản của bạn.</p>" +
+                "        <p><strong>Cảm ơn bạn đã lựa chọn chúng tôi!</strong></p>" +
                 "    </div>" +
                 "    <div class=\"footer\">" +
-                "          <p>Need help? Contact us at <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
-                "           <p>&copy; 2023 Teck Market. All rights reserved.</p>" +
+                "          <p>Nếu cân giúp đỡ? Hãy liên hệ tại <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
+                "           <p>&copy; 2023 Teck Market.</p>" +
                 "    </div>" +
                 "</body>" +
                 "</html>";
@@ -139,7 +150,7 @@ public class EmailService {
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
 
         mimeMessageHelper.setTo(email);
-        mimeMessageHelper.setSubject("Reset Password");
+        mimeMessageHelper.setSubject("Đặt lại mật khẩu");
 
         String emailContent = "<html>" +
                 "<head>" +
@@ -211,15 +222,14 @@ public class EmailService {
                 "<body>" +
                 "    <div class=\"container\">" +
                 "        <div class=\"fullName\">Hello %s</div>" +
-                "        <h1>OTP Verification</h1>" +
-                "        <p>Your One Time Password (OTP) is:</p>" +
+                "        <h1>Mã xác nhận</h1>" +
                 "        <div class=\"otp\">%s</div>" +
-                "        <p>Please use this OTP to complete your account verification.</p>" +
-                "        <p><strong>Thank you for choosing us!</strong></p>" +
+                "        <p>Vui lòng sử dụng OTP này để hoàn tất xác minh tài khoản của bạn.</p>" +
+                "        <p><strong>Cảm ơn bạn đã tin tưởng và lựa chọn chúng tôi!</strong></p>" +
                 "    </div>" +
                 "    <div class=\"footer\">" +
-                "          <p>Need help? Contact us at <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
-                "           <p>&copy; 2023 Teck Market. All rights reserved.</p>" +
+                "          <p>Nếu cân giúp đỡ? Hãy liên hệ tại <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
+                "           <p>&copy; 2023 Teck Market.</p>" +
                 "    </div>" +
                 "</body>" +
                 "</html>";
@@ -228,12 +238,13 @@ public class EmailService {
 
         emailSender.send(mimeMessage);
     }
-    public void sendOrderToEmail(List<CartDto> cartDtos, Order order, String email) throws MessagingException {
+    public void sendOrderToEmail(List<AddProductToOrder> cartDtos, Order order, String email) throws MessagingException {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+        Locale.setDefault(new Locale("vi", "VN"));
 
         mimeMessageHelper.setTo(email);
-        mimeMessageHelper.setSubject("You have placed your order successfully");
+        mimeMessageHelper.setSubject("Bạn đã đặt hàng thành công");
 
         String orderContent = "<html>" +
                 "<head>" +
@@ -316,46 +327,49 @@ public class EmailService {
                 "</head>" +
                 "<body>" +
                 "    <div class=\"container\">" +
-                "    <h1>The information about the order</h1>" +
-                "    <p>Your order with the following details has been confirmed:</p>" +
-                "    <p><strong>Order ID:</strong> " + order.getOrderCode() + "</p>" +
+                "    <h1>Thông tin đơn hàng</h1>" +
+                "    <p>Đơn đặt hàng của bạn với các chi tiết sau đã được xác nhận:</p>" +
+                "    <p><strong>Mã đơn hàng:</strong> " + order.getOrderCode() + "</p>" +
                 "    <table border=\"1\" style=\"width: 100%; border-collapse: collapse;\">" +
                 "        <tr>" +
-                "            <th>Product</th>" +
-                "            <th>Quantity</th>" +
-                "            <th>Color</th>" +
-                "            <th>Price</th>" +
+                "            <th>Sản phẩm</th>" +
+                "            <th>Số lượng</th>" +
+                "            <th>Màu</th>" +
+                "            <th>Giá</th>" +
                 "        </tr>";
 
 // Thêm danh sách sản phẩm vào emailContent
-        for (CartDto item : cartDtos) {
+        for (AddProductToOrder item : cartDtos) {
+            calculatePriceAdd(item);
+            String formattedPrice = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(item.getPrice());
             orderContent += String.format(
                     "<tr>" +
                             "    <td>%s</td>" +
                             "    <td>%d</td>" +
                             "    <td>%s</td>" +
-                            "    <td>%.2f đ</td>" +
-                            "</tr>",
-                    item.getName(),
+                            "    <td>%s</td>" +
+                            "</tr>"
+                    ,
+                    item.getProductName(),
                     item.getQuantity(),
                     item.getColor(),
-                    item.getPrice()
+                   formattedPrice
             );
         }
-
+        String formatTotal = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(order.getTotalMoney());
         orderContent += String.format(
                 "        </table>" +
-                        "        <p><strong>PaymentMethod:</strong> COD</p>" +
-                        "        <p><strong>Total Amount:</strong> %.2f đ</p>" +
-                        "        <p><strong>Thank you for choosing us!</strong></p>" +
+                        "        <p><strong>Phương thức thanh toán:</strong> COD</p>" +
+                        "        <p><strong>Tổng tiền:</strong> %s</p>" +
+                        "        <p><strong>Cảm ơn bạn đã tin tưởng và lựa chọn chúng tôi!</strong></p>" +
                         "    </div>" +
                         "    <div class=\"footer\">" +
-                        "          <p>Need help? Contact us at <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
-                        "           <p>&copy; 2023 Teck Market. All rights reserved.</p>" +
+                        "          <p>Nếu cân giúp đỡ? Hãy liên hệ tại <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
+                        "           <p>&copy; 2023 Teck Market.</p>" +
                         "    </div>" +
                         "</body>" +
                         "</html>",
-                 order.getTotalMoney());
+                 formatTotal);
 
         mimeMessageHelper.setText(orderContent, true);
 
@@ -364,16 +378,16 @@ public class EmailService {
     public void sendOrderPaidToEmail(Order order, String email) throws MessagingException {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
-
+        Locale.setDefault(new Locale("vi", "VN"));
         mimeMessageHelper.setTo(email);
-        mimeMessageHelper.setSubject("You have placed your order successfully");
+        mimeMessageHelper.setSubject("Bạn đã đặt hàng thành công");
         List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrderId(order.getId());
         String payment ;
         if (!order.getIsPaid())
         {
-            payment = "Unpaid";
+            payment = "Chưa thanh toán";
         }else {
-            payment = "Paid";
+            payment = "Đã thanh toán";
         }
 
         String orderContent = "<html>" +
@@ -457,47 +471,49 @@ public class EmailService {
                 "</head>" +
                 "<body>" +
                 "    <div class=\"container\">" +
-                "    <h1>The information about the order</h1>" +
-                "    <p>Your order with the following details has been confirmed:</p>" +
-                "    <p><strong>Order ID:</strong> " + order.getOrderCode() + "</p>" +
+                "    <h1>Thông tin đơn hàng</h1>" +
+                "    <p>Đơn đặt hàng của bạn với các chi tiết sau đã được xác nhận:</p>" +
+                "    <p><strong>Mã đơn hàng:</strong> " + order.getOrderCode() + "</p>" +
                 "    <table border=\"1\" style=\"width: 100%; border-collapse: collapse;\">" +
                 "        <tr>" +
-                "            <th>Product</th>" +
-                "            <th>Quantity</th>" +
-                "            <th>Color</th>" +
-                "            <th>Price</th>" +
+                "            <th>Sản phẩm</th>" +
+                "            <th>Số lượng</th>" +
+                "            <th>Màu</th>" +
+                "            <th>Giá</th>" +
                 "        </tr>";
 
 // Thêm danh sách sản phẩm vào emailContent
         for (OrderDetail item : orderDetails) {
+            calculatePrice(item);
+            String formattedPrice = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(item.getPrice());
             orderContent += String.format(
                     "<tr>" +
                             "    <td>%s</td>" +
                             "    <td>%d</td>" +
                             "    <td>%s</td>" +
-                            "    <td>%.2f đ</td>" +
+                            "    <td>%s</td>" +
                             "</tr>",
                     item.getName(),
                     item.getAmount(),
                     item.getColor(),
-                    item.getPrice()
+                    formattedPrice
             );
         }
-
+        String formatTotal = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(order.getTotalMoney());
         orderContent += String.format(
                 "        </table>" +
-                        "        <p><strong>PaymentMethod:</strong> Paypal</p>" +
-                        "        <p><strong>Total Amount:</strong> %.2f đ</p>" +
-                        "        <p><strong>Payment status:</strong>" + payment+ "</p>" +
-                        "        <p><strong>Thank you for choosing us!</strong></p>" +
+                        "        <p><strong>Phương thức thanh toán:</strong> Paypal</p>" +
+                        "        <p><strong>Tổng tiền:</strong> %s</p>" +
+                        "        <p><strong>Trạng thái thanh toán:</strong>" + payment+ "</p>" +
+                        "        <p><strong>Cảm ơn bạn đã tin tưởng và lựa chọn chúng tôi!</strong></p>" +
                         "    </div>" +
                         "    <div class=\"footer\">" +
-                        "          <p>Need help? Contact us at <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
-                        "           <p>&copy; 2023 Teck Market. All rights reserved.</p>" +
+                        "          <p>Nếu cân giúp đỡ? Hãy liên hệ tại  <a href=\"mailto:tranquangthoik20@gmail.com\">tranquangthoik20@gmail.com</a></p>" +
+                        "           <p>&copy; 2023 Teck Market.</p>" +
                         "    </div>" +
                         "</body>" +
                         "</html>",
-                order.getTotalMoney());
+                formatTotal);
 
         mimeMessageHelper.setText(orderContent, true);
 
@@ -505,4 +521,34 @@ public class EmailService {
     }
 
 
+    public void calculatePrice(OrderDetail orderDetail)
+    {
+
+        Double totalPrice=0.0;
+        ProductVariant productVariantCheck = productVariantRepository.findById(orderDetail.getProductVariantId()).orElse(null);
+        Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+        if (product.getSaleOff()!=0.0 && product.getSaleOff()!=null)
+        {
+            totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*orderDetail.getAmount();
+
+        }else {
+            totalPrice += productVariantCheck.getPrice()*orderDetail.getAmount();
+        }
+        orderDetail.setPrice(totalPrice);
+    }
+    public void calculatePriceAdd(AddProductToOrder orderDetail)
+    {
+
+        Double totalPrice=0.0;
+        ProductVariant productVariantCheck = productVariantRepository.findById(orderDetail.getProductVariantId()).orElse(null);
+        Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+        if (product.getSaleOff()!=0.0 && product.getSaleOff()!=null)
+        {
+            totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*orderDetail.getQuantity();
+
+        }else {
+            totalPrice += productVariantCheck.getPrice()*orderDetail.getQuantity();
+        }
+        orderDetail.setPrice(totalPrice);
+    }
 }

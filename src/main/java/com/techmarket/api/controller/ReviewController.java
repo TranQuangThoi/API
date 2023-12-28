@@ -6,10 +6,12 @@ import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.product.RateProductDto;
 import com.techmarket.api.dto.review.AmountReviewDto;
+import com.techmarket.api.dto.review.CountForEachStart;
 import com.techmarket.api.dto.review.MyReviewDto;
 import com.techmarket.api.dto.review.ReviewDto;
 import com.techmarket.api.exception.UnauthorizationException;
 import com.techmarket.api.form.review.CreateReviewForm;
+import com.techmarket.api.form.review.FeedbackForm;
 import com.techmarket.api.form.review.UpdateReviewForm;
 import com.techmarket.api.mapper.ProductMapper;
 import com.techmarket.api.mapper.ReviewMapper;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -46,9 +49,10 @@ public class ReviewController extends ABasicController{
     private OrderDetailRepository orderDetailRepository;
     @Autowired
     private ProductMapper productMapper;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
 
     @GetMapping(value = "/get-by-product/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('RV_V')")
     public ApiMessageDto<ResponseListDto<List<ReviewDto>>> getByProduct(@PathVariable("id") Long id,Pageable pageable) {
         ApiMessageDto<ResponseListDto<List<ReviewDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<ReviewDto>> responseListDto =new ResponseListDto<>();
@@ -94,9 +98,9 @@ public class ReviewController extends ABasicController{
         return apiMessageDto;
     }
     @GetMapping(value = "/get-my-review", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<MyReviewDto>>> getMyReview(Pageable pageable) {
-        ApiMessageDto<ResponseListDto<List<MyReviewDto>>> apiMessageDto = new ApiMessageDto<>();
-        ResponseListDto<List<MyReviewDto>> responseListDto =new ResponseListDto<>();
+    public ApiMessageDto<List<MyReviewDto>> getMyReview() {
+        ApiMessageDto<List<MyReviewDto>> apiMessageDto = new ApiMessageDto<>();
+        List<MyReviewDto> list = new ArrayList<>();
 
         String tokenExist = getCurrentToken();
         if (tokenExist==null)
@@ -120,12 +124,22 @@ public class ReviewController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        Page<Review> reviewList = reviewRepository.findAllByUserId(user.getId(),pageable);
-        responseListDto.setContent(reviewMapper.fromEntityToGetMyReviewDtoList(reviewList.getContent()));
-        responseListDto.setTotalPages(reviewList.getTotalPages());
-        responseListDto.setTotalElements(reviewList.getTotalElements());
-
-        apiMessageDto.setData(responseListDto);
+       List<Review> reviewList = reviewRepository.findAllByUserId(user.getId());
+       list= reviewMapper.fromEntityToGetMyReviewDtoList(reviewList);
+        for (MyReviewDto item : list)
+        {
+            OrderDetail orderDetail = orderDetailRepository.findById(item.getOrderDetail()).orElse(null);
+            if (orderDetail==null)
+            {
+                apiMessageDto.setMessage("orderDetail Not found");
+                apiMessageDto.setResult(false);
+                apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+                return apiMessageDto;
+            }
+            item.setPrice(orderDetail.getPrice());
+            item.setColor(orderDetail.getColor());
+        }
+        apiMessageDto.setData(list);
         apiMessageDto.setMessage("get review success");
         return apiMessageDto;
     }
@@ -167,7 +181,15 @@ public class ReviewController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        Product product = productRepository.findById(createReviewForm.getProductId()).orElse(null);
+        OrderDetail orderDetail = orderDetailRepository.findById(createReviewForm.getOrderDetailId()).orElse(null);
+        if (orderDetail==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found orderDetail");
+            apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        Product product = productRepository.findById(orderDetail.getProduct_Id()).orElse(null);
         if (product==null)
         {
             apiMessageDto.setResult(false);
@@ -175,9 +197,7 @@ public class ReviewController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-
-        List<OrderDetail> orderDetailList = orderDetailRepository.findUnpaidOrderDetailsByUserIdAndProductId(UserBaseConstant.ORDER_STATE_COMPLETED,user.getId(),createReviewForm.getProductId());
-        if (orderDetailList.size()==0)
+        if (!orderDetailRepository.checkReviewProduct(UserBaseConstant.ORDER_STATE_COMPLETED,user.getId(),createReviewForm.getOrderDetailId()))
         {
             apiMessageDto.setResult(false);
             apiMessageDto.setMessage("You can not rate this product");
@@ -188,13 +208,10 @@ public class ReviewController extends ABasicController{
         review.setProduct(product);
         review.setUser(user);
         reviewRepository.save(review);
-
-        for (OrderDetail item : orderDetailList)
-        {
-            item.setIsReviewed(true);
-            orderDetailRepository.save(item);
-        }
+        orderDetail.setIsReviewed(true);
+        orderDetailRepository.save(orderDetail);
         product.setTotalReview(product.getTotalReview()+1);
+        product.setAvgStart(reviewRepository.avgStartOfProduct(product.getId()));
         productRepository.save(product);
         apiMessageDto.setMessage("review success");
         return apiMessageDto;
@@ -262,7 +279,7 @@ public class ReviewController extends ABasicController{
     }
 
     @GetMapping(value = "/star/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<AmountReviewDto> listReviews(@PathVariable Long productId) {
+    public ApiMessageDto<AmountReviewDto> AvgStart(@PathVariable Long productId) {
 
         ApiMessageDto<AmountReviewDto> apiMessageDto = new ApiMessageDto<>();
 
@@ -282,6 +299,51 @@ public class ReviewController extends ABasicController{
 
         apiMessageDto.setData(amountReviewDto);
         return apiMessageDto;
+    }
+
+    @GetMapping(value = "/star/count-for-each/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<CountForEachStart>>> countForEachStart(@PathVariable Long productId) {
+        ApiMessageDto<ResponseListDto<List<CountForEachStart>>> apiMessageDto = new ApiMessageDto<>();
+        ResponseListDto<List<CountForEachStart>> responseListDto = new ResponseListDto<>();
+
+        List<CountForEachStart> amountReviewDtos = reviewRepository.groupByStar(productId);
+        for (Integer star: Arrays.asList(UserBaseConstant.REVIEW_STARS)){
+            boolean found = false;
+            for (CountForEachStart amountReviewDto : amountReviewDtos) {
+                if (amountReviewDto.getStar().equals(star)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                CountForEachStart newAmountReviewDto = new CountForEachStart(star, 0L);
+                amountReviewDtos.add(newAmountReviewDto);
+            }
+        }
+
+        responseListDto.setContent(amountReviewDtos);
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("Get list amount review success ");
+        return apiMessageDto;
+    }
+
+    @PostMapping(value = "/feed-back", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> feedBack(@Valid @RequestBody FeedbackForm feedbackForm, BindingResult bindingResult) {
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        Review review = reviewRepository.findById(feedbackForm.getReviewId()).orElse(null);
+        if (review==null)
+        {
+            apiMessageDto.setMessage("not found review");
+            apiMessageDto.setResult(false);
+            return apiMessageDto;
+        }
+        Review feedback = new Review();
+        feedback.setMessage(feedbackForm.getMessage());
+        feedback.setParentId(review);
+        reviewRepository.save(feedback);
+        apiMessageDto.setMessage("feedback success");
+        return apiMessageDto;
+
     }
 
 

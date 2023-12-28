@@ -27,6 +27,13 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>,
             "AND od.product_Id = :productId " +
             "AND od.isReviewed = false")
     List<OrderDetail> findUnpaidOrderDetailsByUserIdAndProductId(@Param("state") Integer state,@Param("userId") Long userId,@Param("productId") Long productId);
+    @Query("SELECT count(od)>0 FROM OrderDetail od " +
+            "JOIN od.order o " +
+            "WHERE o.user.id = :userId " +
+            "AND o.state = :state " +
+            "AND od.id = :orderDetailId " +
+            "AND od.isReviewed = false")
+    Boolean checkReviewProduct(@Param("state") Integer state,@Param("userId") Long userId ,@Param("orderDetailId") Long orderDetailId);
 
     @Query("SELECT od.product_Id FROM OrderDetail od " +
             "JOIN od.order o " +

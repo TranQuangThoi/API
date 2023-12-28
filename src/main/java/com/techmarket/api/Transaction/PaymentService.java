@@ -8,6 +8,8 @@ import com.techmarket.api.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +28,13 @@ public class PaymentService {
         paymentExecute.setPayerId(payerId);
         return payment.execute(apiContext, paymentExecute);
     }
-    private String convertToUSD(Double amount){
-        //Exchange rate from USD  to VND: 1 USD = 24230 VND (20/12/2023)
-        double convertCurrency = amount / 24230;
-        DecimalFormat decimalFormat = new DecimalFormat("#.##"); // Định dạng số thập phân với hai chữ số sau dấu thập phân
-        return decimalFormat.format(convertCurrency);
+    private BigDecimal convertToUSD(Double amount){
+//        double convertCurrency = amount / 24230;
+//        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+//        return decimalFormat.format(convertCurrency);
+        BigDecimal amountBigDecimal = BigDecimal.valueOf(amount);
+        BigDecimal exchangeRate = new BigDecimal("24230");
+        return amountBigDecimal.divide(exchangeRate, 2, RoundingMode.HALF_EVEN);
     }
     public Payment createPayment(CreatePaymentForm createPaymentForm, Order order)throws PayPalRESTException
     {
@@ -40,14 +44,14 @@ public class PaymentService {
         Item item = new Item();
         item.setName("Nạp tiền ");
         item.setCurrency("USD");
-        item.setPrice(convertToUSD(order.getTotalMoney()));
+        item.setPrice(convertToUSD(order.getTotalMoney()).toString());
         item.setQuantity("1");
         items.add(item);
         itemList.setItems(items);
 
         Amount amount = new Amount();
         amount.setCurrency("USD");
-        amount.setTotal(convertToUSD(order.getTotalMoney()));
+        amount.setTotal(convertToUSD(order.getTotalMoney()).toString());
 
         Transaction transaction = new Transaction();
         transaction.setDescription("Nạp tiền ");
@@ -64,9 +68,10 @@ public class PaymentService {
         payment.setPayer(payer);
         payment.setTransactions(transactions);
 
+
         RedirectUrls redirectUrls = new RedirectUrls();
-        redirectUrls.setReturnUrl(createPaymentForm.getUrlSuccess());
-        redirectUrls.setCancelUrl(createPaymentForm.getUrlCancel());
+        redirectUrls.setReturnUrl(createPaymentForm.getUrlSuccess()+"?orderId=" + order.getId());
+        redirectUrls.setCancelUrl(createPaymentForm.getUrlCancel()+"?orderId=" + order.getId());
         payment.setRedirectUrls(redirectUrls);
         apiContext.setMaskRequestId(true);
         return payment.create(apiContext);

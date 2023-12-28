@@ -36,5 +36,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query("SELECT od FROM Order od where od.phone= :phone ORDER BY od.createdDate DESC")
     Page<Order> findAllByPhone(@Param("phone") String phone,Pageable pageable);
 
-    Order findByPhoneAndOrderCode(String phone ,String orderCode);
+    Order findOrderByOrderCode(String orderCode);
+
+    Integer countOrderByUserIdAndState(Long id,Integer state);
 }

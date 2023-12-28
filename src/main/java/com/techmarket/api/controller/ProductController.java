@@ -11,10 +11,7 @@ import com.techmarket.api.form.productVariant.CreateProductVariantForm;
 import com.techmarket.api.form.productVariant.UpdateProductVariantForm;
 import com.techmarket.api.mapper.ProductMapper;
 import com.techmarket.api.mapper.ProductVariantMapper;
-import com.techmarket.api.model.Brand;
-import com.techmarket.api.model.Category;
-import com.techmarket.api.model.Product;
-import com.techmarket.api.model.ProductVariant;
+import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.ProductCriteria;
 import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +47,10 @@ public class ProductController extends ABasicController{
     private ProductVariantRepository productVariantRepository;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private CartRepository cartRepository;
+    @Autowired
+    private CartDetailRepository cartDetailRepository;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('PR_L')")
@@ -116,19 +117,20 @@ public class ProductController extends ABasicController{
         return  apiMessageDto;
     }
     @GetMapping(value = "/auto-complete",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<ProductDto>>> ListAutoComplete(ProductCriteria productCriteria)
+    public ApiMessageDto<List<ProductDto>> ListAutoComplete(ProductCriteria productCriteria)
     {
-        ApiMessageDto<ResponseListDto<List<ProductDto>>> apiMessageDto = new ApiMessageDto<>();
-        ResponseListDto<List<ProductDto>> responseListDto = new ResponseListDto<>();
+        ApiMessageDto<List<ProductDto>> apiMessageDto = new ApiMessageDto<>();
+//        ResponseListDto<List<ProductDto>> responseListDto = new ResponseListDto<>();
+        List<Product> list = productRepository.findAll(productCriteria.getSpecification());
         productCriteria.setStatus(UserBaseConstant.STATUS_ACTIVE);
-        Pageable pageable = PageRequest.of(0,10);
 
-        Page<Product> listProduct = productRepository.findAll(productCriteria.getSpecification(),pageable);
-        responseListDto.setContent(productMapper.fromEntityToListProductAutoDto(listProduct.getContent()));
-        responseListDto.setTotalPages(listProduct.getTotalPages());
-        responseListDto.setTotalElements(listProduct.getTotalElements());
-
-        apiMessageDto.setData(responseListDto);
+        List<ProductDto> listProduct = productMapper.fromEntityToListProductDto(list);
+        for (ProductDto item : listProduct)
+        {
+            List<ProductVariant> productVariantList = productVariantRepository.findAllByProductIdAndStatus(item.getId(),UserBaseConstant.STATUS_ACTIVE);
+            item.setListProductVariant(productVariantMapper.fromEntityToListProVariantDto(productVariantList));
+        }
+        apiMessageDto.setData(listProduct);
         apiMessageDto.setMessage("get list product success");
         return apiMessageDto;
     }
@@ -157,6 +159,13 @@ public class ProductController extends ABasicController{
         }
         Product product = productMapper.fromCreateProductToEntity(createProductForm);
         product.setCategory(categoryExist);
+        if (createProductForm.getSaleOff()==null)
+        {
+            product.setSaleOff(0.0);
+        }else {
+            product.setSaleOff(createProductForm.getSaleOff());
+        }
+
 
         if (createProductForm.getBrandId()!=null)
         {
@@ -275,6 +284,11 @@ public class ProductController extends ABasicController{
             apiMessageDto.setMessage("Not found product");
             apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
             return apiMessageDto;
+        }
+        List<ProductVariant> productList = productVariantRepository.findAllByProductId(id);
+        for (ProductVariant item : productList)
+        {
+            cartDetailRepository.deleteAllByProductVariantId(item.getId());
         }
         reviewRepository.deleteAllByProductId(id);
         productVariantRepository.deleteAllByProductId(id);

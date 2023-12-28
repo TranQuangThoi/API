@@ -16,6 +16,8 @@ public interface OrderDetailMapper {
     @Mapping(source = "color", target = "color")
     @Mapping(source = "amount", target = "amount")
     @Mapping(source = "price", target = "price")
+    @Mapping(source = "image",target = "image")
+    @Mapping(source = "product_Id",target = "productId")
     @Named("fromEntityToOrderDetailDto")
     @BeanMapping(ignoreByDefault = true)
     OrderDetailDto fromEntityToOrderDetailDto(OrderDetail orderDetail);

@@ -27,6 +27,7 @@ public class AccountDto {
     @ApiModelProperty(name = "avatar")
     private String avatar;
     private Boolean isSuperAdmin;
+    private Integer status;
 
 
 

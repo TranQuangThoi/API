@@ -12,4 +12,6 @@ public class OrderDetailDto {
     private String color;
     private Integer amount;
     private Double price;
+    private String image;
+    private Long productId;
 }

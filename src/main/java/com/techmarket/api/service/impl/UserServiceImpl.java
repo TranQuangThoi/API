@@ -2,6 +2,7 @@ package com.techmarket.api.service.impl;
 
 import com.techmarket.api.config.SecurityConstant;
 import com.techmarket.api.constant.UserBaseConstant;
+import com.techmarket.api.exception.BadRequestException;
 import com.techmarket.api.jwt.UserBaseJwt;
 import com.techmarket.api.model.Account;
 import com.techmarket.api.repository.AccountRepository;
@@ -9,9 +10,12 @@ import com.techmarket.api.repository.GroupRepository;
 import com.techmarket.api.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -104,21 +109,20 @@ public class UserServiceImpl implements UserDetailsService {
         Map<String, Serializable> extensionProperties = new HashMap<>();
 
         Account user = accountRepository.findAccountByPhone(phone);
-        if(user == null || !Objects.equals(UserBaseConstant.STATUS_ACTIVE, user.getStatus())){
-            log.error("Invalid phone.");
-            throw new UsernameNotFoundException("Invalid phone.");
-        }
-
-        if(!passwordEncoder.matches(password, user.getPassword())){
-            log.error("Invalid password.");
-            throw new UsernameNotFoundException("Invalid password.");
-        }
-
         boolean enabled = true;
-        if (user.getStatus() != 1) {
-            log.error("User had been locked");
-            enabled = false;
-        }
+            if (user!=null && user.getStatus()!=1) {
+                log.error("User had been locked");
+                enabled = false;
+                throw new BadRequestException("Tài khoản đã bị khóa hoặc chưa được kích hoạt");
+            }
+            if(user == null){
+                log.error("Invalid phone.");
+                throw new BadRequestException("Tài khoản hoặt mật khẩu không chính xác");
+            }else if (!passwordEncoder.matches(password, user.getPassword())) {
+                log.error("Invalid password.");
+                throw new BadRequestException("Tài khoản hoặc mật khẩu không chính xác");
+            }
+
 
         requestParameters.put("phone", user.getPhone());
 
@@ -151,5 +155,15 @@ public class UserServiceImpl implements UserDetailsService {
             }
         }
         return null;
+    }
+    private OAuth2AccessToken createErrorToken(String errorCode, String errorMessage) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", errorCode);
+        response.put("message", errorMessage);
+
+        DefaultOAuth2AccessToken errorToken = new DefaultOAuth2AccessToken(" Invalid credentials");
+        errorToken.setAdditionalInformation(response);
+
+        return errorToken;
     }
 }
