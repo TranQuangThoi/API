@@ -22,7 +22,7 @@ public class Voucher extends Auditable<String>{
     private String title;
     @Column(columnDefinition = "text")
     private String content;
-    private Double percent;
+    private Integer percent;
     private Date expired;
     private Integer kind;
     private Integer amount;

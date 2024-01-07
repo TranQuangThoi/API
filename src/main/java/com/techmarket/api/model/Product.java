@@ -6,6 +6,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "db_product")
@@ -34,5 +36,12 @@ public class Product extends Auditable<String>{
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+    @ManyToMany
+    @JoinTable(
+            name = "related_products",
+            joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "related_product_id", referencedColumnName = "id")
+    )
+    private List<Product> relatedProducts = new ArrayList<>();
 
 }

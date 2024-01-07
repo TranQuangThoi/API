@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserBaseOTPService {
     public static final int TWO_HOUR = 2 * 60 * 60 * 1000;
     private final SecureRandom secureRandom;
-    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String CHARACTERS = "987654321ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private List<Integer> numberRand = new ArrayList<>();
 
     private Map<String, Long> storeOrderSttForCheck = new ConcurrentHashMap<>();

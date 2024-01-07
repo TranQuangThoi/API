@@ -23,4 +23,6 @@ public class User extends Auditable<String>{
     @OneToOne
     @JoinColumn(name = "account_id")
     private Account account;
+    private Integer memberShip;
+    private Integer point=0;
 }

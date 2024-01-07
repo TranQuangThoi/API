@@ -14,9 +14,11 @@ import com.techmarket.api.form.voucher.UpdateVoucherForm;
 import com.techmarket.api.mapper.VoucherMapper;
 import com.techmarket.api.model.Product;
 import com.techmarket.api.model.ProductVariant;
+import com.techmarket.api.model.User;
 import com.techmarket.api.model.Voucher;
 import com.techmarket.api.model.criteria.ProductCriteria;
 import com.techmarket.api.model.criteria.VourcherCriteria;
+import com.techmarket.api.repository.UserRepository;
 import com.techmarket.api.repository.VoucherRepository;
 import com.techmarket.api.schedule.VoucherSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -41,6 +45,8 @@ public class VoucherController extends ABasicController{
     private VoucherMapper voucherMapper;
     @Autowired
     private VoucherSchedule voucherSchedule;
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('VC_L')")
@@ -133,5 +139,34 @@ public class VoucherController extends ABasicController{
         return apiMessageDto;
     }
 
+    @GetMapping(value = "/get-my-voucher", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<List<VoucherDto>> getMyVoucher() {
+        ApiMessageDto<List<VoucherDto>> apiMessageDto = new ApiMessageDto<>();
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
+        if (user==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Staff are not allowed to use this voucher ");
+            apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        List<Voucher> listMyVocher = voucherRepository.findByKinds(UserBaseConstant.STATUS_ACTIVE , Arrays.asList(UserBaseConstant.VOUCHER_KIND_ALL,user.getMemberShip()));
+        List<VoucherDto> voucherDtoList = voucherMapper.fromEntityListToDtoList(listMyVocher);
+
+        apiMessageDto.setData(voucherDtoList);
+        apiMessageDto.setMessage("get list voucher success");
+        return apiMessageDto;
+    }
+    @GetMapping(value = "/get-voucher-for-guest", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<List<VoucherDto>> getForMyGuest() {
+        ApiMessageDto<List<VoucherDto>> apiMessageDto = new ApiMessageDto<>();
+        List<Voucher> listMyVocher = voucherRepository.findByKinds(UserBaseConstant.STATUS_ACTIVE , Arrays.asList(UserBaseConstant.VOUCHER_KIND_ALL));
+        List<VoucherDto> voucherDtoList = voucherMapper.fromEntityListToDtoList(listMyVocher);
+
+        apiMessageDto.setData(voucherDtoList);
+        apiMessageDto.setMessage("get list voucher success");
+        return apiMessageDto;
+    }
 
 }
