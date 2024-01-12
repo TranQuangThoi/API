@@ -14,10 +14,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class User extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
+
     private Date birthday;
     private Integer gender;
     @OneToOne

@@ -15,10 +15,6 @@ import java.util.List;
 @Getter
 @Setter
 public class Product extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
     private String name;
     private Double price;
     @Column(name = "description", columnDefinition = "text")

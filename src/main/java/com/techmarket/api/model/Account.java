@@ -19,10 +19,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Account extends Auditable<String> {
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
+
     private int kind;
     private String username;
     private String phone;

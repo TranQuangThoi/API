@@ -1,0 +1,66 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="QThoi (generated)" id="1705074560249-3">
+        <addColumn tableName="db_cart_detail">
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-4">
+        <addColumn tableName="db_cart">
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-5">
+        <addColumn tableName="db_cart_detail">
+            <column name="created_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-6">
+        <addColumn tableName="db_cart">
+            <column name="modified_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-7">
+        <addColumn tableName="db_cart_detail">
+            <column name="modified_by" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-8">
+        <addColumn tableName="db_cart">
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-9">
+        <addColumn tableName="db_cart_detail">
+            <column name="modified_date" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-10">
+        <addColumn tableName="db_cart">
+            <column name="status" type="integer">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1705074560249-11">
+        <addColumn tableName="db_cart_detail">
+            <column name="status" type="integer">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

@@ -13,10 +13,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 public class Nation extends Auditable<String> {
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
+
     private String name;
     private String postCode;
     private Integer kind;

@@ -14,24 +14,15 @@ import javax.persistence.*;
 @Setter
 public class Review extends Auditable<String>{
 
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
-
     private Integer star;
-
     @Column(columnDefinition = "text")
     private String message;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-
     private Long orderDetail;
     @ManyToOne
     @JoinColumn(name = "parent_id")

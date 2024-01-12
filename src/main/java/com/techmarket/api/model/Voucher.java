@@ -14,10 +14,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class Voucher extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
 
     private String title;
     @Column(columnDefinition = "text")

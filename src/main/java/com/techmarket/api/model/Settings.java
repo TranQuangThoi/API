@@ -13,10 +13,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 public class Settings extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
+
     @Column(name = "setting_key", unique =  true)
     private String settingKey;
     @Column(name = "setting_value", columnDefinition = "text")

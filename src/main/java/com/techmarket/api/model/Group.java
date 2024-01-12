@@ -15,10 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Group extends Auditable<String> {
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
+
     @Column(name = "name", unique =  true)
     private String name;
     @Column(name = "description", length = 1000)
