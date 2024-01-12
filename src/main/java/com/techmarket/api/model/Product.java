@@ -36,7 +36,7 @@ public class Product extends Auditable<String>{
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "related_products",
             joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"),

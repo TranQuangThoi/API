@@ -2,6 +2,7 @@ package com.techmarket.api.form.product;
 
 import com.techmarket.api.form.productVariant.CreateProductVariantForm;
 import com.techmarket.api.form.productVariant.UpdateProductVariantForm;
+import com.techmarket.api.model.Product;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -48,4 +49,7 @@ public class UpdateProductForm {
 
     @ApiModelProperty(name = "List product varriant")
     private List<@Valid UpdateProductVariantForm> listDetails;
+
+    @ApiModelProperty(name = "List product related",required = false)
+    Long[] relatedProducts;
 }

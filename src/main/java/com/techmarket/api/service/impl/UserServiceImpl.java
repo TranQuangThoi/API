@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
@@ -107,36 +108,53 @@ public class UserServiceImpl implements UserDetailsService {
         Set<String> responseTypes = new HashSet<>();
         responseTypes.add("code");
         Map<String, Serializable> extensionProperties = new HashMap<>();
-
-        Account user = accountRepository.findAccountByPhone(phone);
         boolean enabled = true;
-            if (user!=null && user.getStatus()!=1) {
-                log.error("User had been locked");
-                enabled = false;
-                throw new BadRequestException("Tài khoản đã bị khóa hoặc chưa được kích hoạt");
-            }
-            if(user == null){
+        try {
+            Account user = accountRepository.findAccountByPhone(phone);
+
+            if (user == null) {
                 log.error("Invalid phone.");
-                throw new BadRequestException("Tài khoản hoặt mật khẩu không chính xác");
-            }else if (!passwordEncoder.matches(password, user.getPassword())) {
-                log.error("Invalid password.");
-                throw new BadRequestException("Tài khoản hoặc mật khẩu không chính xác");
+                enabled = false;
+                throw new OAuth2Exception("Tài khoản hoặt mật khẩu không chính xác");
             }
 
+            if (user.getStatus() != 1) {
+                log.error("User has been locked");
+                enabled = false;
+                throw new OAuth2Exception("Tài khoản đã bị khóa hoặc chưa được kích hoạt");
+            }
 
-        requestParameters.put("phone", user.getPhone());
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                log.error("Invalid password.");
+                enabled = false;
+                throw new OAuth2Exception("Tài khoản hoặc mật khẩu không chính xác");
+            }
 
-        Set<GrantedAuthority> grantedAuthorities = getAccountPermission(user);
+            requestParameters.put("phone", user.getPhone());
 
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User(user.getPhone(), user.getPassword(), enabled, true, true, true, grantedAuthorities);
+            Set<GrantedAuthority> grantedAuthorities = getAccountPermission(user);
 
-        OAuth2Request oAuth2Request = new OAuth2Request(requestParameters, clientId,
-                userDetails.getAuthorities(), approved, client.getScope(),
-                client.getResourceIds(), null, responseTypes, extensionProperties);
-        org.springframework.security.core.userdetails.User userPrincipal = new org.springframework.security.core.userdetails.User(userDetails.getUsername(), userDetails.getPassword(), userDetails.isEnabled(), userDetails.isAccountNonExpired(), userDetails.isCredentialsNonExpired(), userDetails.isAccountNonLocked(), userDetails.getAuthorities());
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userPrincipal, null, userDetails.getAuthorities());
-        OAuth2Authentication auth = new OAuth2Authentication(oAuth2Request, authenticationToken);
-        return tokenServices.createAccessToken(auth);
+            UserDetails userDetails = new org.springframework.security.core.userdetails.User(user.getPhone(), user.getPassword(), enabled, true, true, true, grantedAuthorities);
+
+            OAuth2Request oAuth2Request = new OAuth2Request(requestParameters, clientId,
+                    userDetails.getAuthorities(), approved, client.getScope(),
+                    client.getResourceIds(), null, responseTypes, extensionProperties);
+
+            org.springframework.security.core.userdetails.User userPrincipal = new org.springframework.security.core.userdetails.User(userDetails.getUsername(), userDetails.getPassword(), userDetails.isEnabled(), userDetails.isAccountNonExpired(), userDetails.isCredentialsNonExpired(), userDetails.isAccountNonLocked(), userDetails.getAuthorities());
+
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userPrincipal, null, userDetails.getAuthorities());
+            OAuth2Authentication auth = new OAuth2Authentication(oAuth2Request, authenticationToken);
+
+            return tokenServices.createAccessToken(auth);
+        } catch (UsernameNotFoundException ex) {
+            log.error("Username not found.");
+            throw new OAuth2Exception("Tài khoản không tồn tại", ex);
+        } catch (OAuth2Exception ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Unexpected error.", ex);
+            throw new OAuth2Exception("Lỗi không xác định", ex);
+        }
     }
 
     public UserBaseJwt getAddInfoFromToken() {
