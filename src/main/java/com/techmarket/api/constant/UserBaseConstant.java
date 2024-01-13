@@ -69,6 +69,10 @@ public class UserBaseConstant {
     public static final Integer USER_KIND_DIAMOND_MEMEBERSHIP = 3;
     public static final Integer USER_KIND_VIP_MEMEBERSHIP = 4;
 
+    public static final Integer NOTIFICATION_STATE_SENT = 0;
+    public static final Integer NOTIFICATION_STATE_READ = 1;
+
+    public static final Integer NOTIFICATION_KIND_NOTIFY_VOUCHER = 0;
 
     private UserBaseConstant(){
         throw new IllegalStateException("Utility class");

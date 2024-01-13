@@ -17,8 +17,8 @@ public class Notification extends Auditable<String>{
     private Long idUser;
     @Column(name = "ref_id")
     private String refId;
-    private String kind;
-    private Boolean isRead = false;
+    private Integer kind;
+    private Integer state;
     @Column(columnDefinition = "longtext")
     private String msg;
 }
