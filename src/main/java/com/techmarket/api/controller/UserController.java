@@ -109,6 +109,8 @@ public class UserController extends ABasicController{
 
         User user = new User();
         user.setAccount(account);
+        user.setPoint(0);
+        user.setMemberShip(UserBaseConstant.USER_KIND_NEW_MEMBERSHIP);
         user.setBirthday(signUpUserForm.getBirthday());
         user.setStatus(UserBaseConstant.STATUS_LOCK);
         userRepository.save(user);

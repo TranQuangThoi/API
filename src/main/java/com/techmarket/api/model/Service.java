@@ -12,10 +12,6 @@ import javax.persistence.*;
 @Getter
 @Setter
 public class Service extends Auditable<String> {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @OneToOne
     @MapsId
     @JoinColumn(name = "account_id")

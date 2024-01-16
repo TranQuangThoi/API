@@ -13,20 +13,12 @@ import javax.persistence.*;
 @Getter
 @Setter
 public class Permission extends Auditable<String> {
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
     @Column(name = "name", unique =  true)
     private String name;
-    /**
-     *
-     */
     @Column(name = "action")
     private String action;
     @Column(name = "show_menu")
     private Boolean showMenu;
-
     private String description;
     @Column(name = "name_group")
     private String nameGroup;

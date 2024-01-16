@@ -78,7 +78,7 @@ public class OrderService extends ABasicController {
         }
         if (createOrderForm.getVoucherId()!=null)
         {
-           handleVoucher(createOrderForm.getVoucherId(),order);
+           handleVoucher(createOrderForm.getVoucherId(),order,totalPrice);
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
@@ -120,7 +120,7 @@ public class OrderService extends ABasicController {
         }
         if (createOrderForm.getVoucherId()!=null)
         {
-            handleVoucher(createOrderForm.getVoucherId(),order);
+            handleVoucher(createOrderForm.getVoucherId(),order,totalPrice);
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
@@ -152,7 +152,7 @@ public class OrderService extends ABasicController {
         productRepository.save(product);
 
     }
-    public void handleVoucher(Long voucherId,Order order)
+    public Double handleVoucher(Long voucherId,Order order,Double totalPrice)
     {
         Voucher voucher = voucherRepository.findById(voucherId).orElse(null);
         if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
@@ -161,6 +161,8 @@ public class OrderService extends ABasicController {
             voucher.setAmount(voucher.getAmount()-1);
             voucherRepository.save(voucher);
         }
+        totalPrice = totalPrice - (totalPrice*voucher.getPercent())/100;
+        return totalPrice;
     }
 
 

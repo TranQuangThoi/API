@@ -1,6 +1,7 @@
 package com.techmarket.api.form.product;
 
 import com.techmarket.api.form.productVariant.CreateProductVariantForm;
+import com.techmarket.api.model.Product;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -43,5 +44,8 @@ public class CreateProductForm {
 
     @ApiModelProperty(name = "List product varriant")
     private List<@Valid CreateProductVariantForm> listDetails;
+
+    @ApiModelProperty(name = "List product related",required = false)
+    Long[] relatedProducts;
 
 }

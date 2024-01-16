@@ -14,15 +14,9 @@ import javax.persistence.*;
 @Setter
 public class OrderDetail extends Auditable<String>{
 
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
-
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
-
     @Column(name = "product_variant_id")
     private Long productVariantId;
     private String name;

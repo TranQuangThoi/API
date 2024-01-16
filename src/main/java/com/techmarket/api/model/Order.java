@@ -14,21 +14,14 @@ import java.util.Date;
 @Getter
 @Setter
 public class Order extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = true)
     private User user;
-
     @Column(name = "total_money")
     private Double totalMoney =0.0;
-
     @Column(name = "payment_method")
     private Integer paymentMethod;
-
     @Column(columnDefinition = "text")
     private String note;
     private String address;

@@ -12,7 +12,9 @@ public class VoucherDto extends ABasicAdminDto {
     private Long id;
     private String title;
     private String content;
-    private Double percent;
+    private Integer percent;
     private Date expired;
     private Integer kind;
+    private Integer amount;
+
 }

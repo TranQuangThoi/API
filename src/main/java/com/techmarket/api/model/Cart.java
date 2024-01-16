@@ -12,11 +12,8 @@ import javax.persistence.*;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public class Cart {
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
+public class Cart extends Auditable<String>{
+
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;

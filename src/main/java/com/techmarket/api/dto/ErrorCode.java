@@ -149,5 +149,11 @@ public class ErrorCode {
      */
     public static final String VOUCHER_ERROR_NOT_FOUND = "ERROR-VOUCHER-0000";
 
+    /**
+     * Starting error code NOTIFICATION_EROR
+     *
+     */
+    public static final String NOTIFICATION_ERROR_NOT_FOUND ="ERROR-NOTIFICATION-0000";
+
 
 }

@@ -23,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,6 +117,33 @@ public class ProductController extends ABasicController{
         apiMessageDto.setMessage("Get product success.");
         return  apiMessageDto;
     }
+    @GetMapping(value = "/get-product-related/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<List<ProductDto>> getProductRelated(@PathVariable("id") Long id) {
+        ApiMessageDto<List<ProductDto>> apiMessageDto = new ApiMessageDto<>();
+
+        Product product = productRepository.findById(id).orElse(null);
+        if (product==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found product");
+            apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+        List<Product> productList = product.getRelatedProducts();
+        List<ProductDto> productDtoList = new ArrayList<>();
+        for (Product item : productList)
+        {
+            ProductDto productDto = productMapper.fromEntityToProductDto(item);
+            List<ProductVariant> productVariantList = productVariantRepository.findAllByProductIdAndStatus(item.getId(),UserBaseConstant.STATUS_ACTIVE);
+            productDto.setListProductVariant(productVariantMapper.fromEntityToListProVariantAutoDto(productVariantList));
+            productDtoList.add(productDto);
+        }
+
+        apiMessageDto.setData(productDtoList);
+        apiMessageDto.setResult(true);
+        apiMessageDto.setMessage("Get product success.");
+        return  apiMessageDto;
+    }
     @GetMapping(value = "/auto-complete",produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<List<ProductDto>> ListAutoComplete(ProductCriteria productCriteria)
     {
@@ -158,6 +186,17 @@ public class ProductController extends ABasicController{
             return apiMessageDto;
         }
         Product product = productMapper.fromCreateProductToEntity(createProductForm);
+        if (createProductForm.getRelatedProducts()!=null)
+        {
+            List<Product> related = new ArrayList<>();
+            for(int i=0;i< createProductForm.getRelatedProducts().length;i++){
+                Product productExited = productRepository.findById(createProductForm.getRelatedProducts()[i]).orElse(null);
+                if(productExited != null){
+                    related.add(productExited);
+                }
+            }
+            product.setRelatedProducts(related);
+        }
         product.setCategory(categoryExist);
         if (createProductForm.getSaleOff()==null)
         {
@@ -268,11 +307,22 @@ public class ProductController extends ABasicController{
        }
         product.setTotalInStock(totalStockProduct);
         productMapper.fromUpdateToEntityProduct(updateProductForm,product);
+        if (updateProductForm.getRelatedProducts()!=null){
+            List<Product> related = new ArrayList<>();
+            for(int i=0;i< updateProductForm.getRelatedProducts().length;i++){
+                Product productExited = productRepository.findById(updateProductForm.getRelatedProducts()[i]).orElse(null);
+                if(productExited != null){
+                    related.add(productExited);
+                }
+            }
+            product.setRelatedProducts(related);
+        }
         productRepository.save(product);
 
         apiMessageDto.setMessage("update product success");
         return apiMessageDto;
     }
+    @Transactional
     @DeleteMapping(value = "/delete/{id}")
     @PreAuthorize("hasRole('PR_D')")
     public ApiMessageDto<String> deleteProduct(@PathVariable("id") Long id)
@@ -290,6 +340,9 @@ public class ProductController extends ABasicController{
         {
             cartDetailRepository.deleteAllByProductVariantId(item.getId());
         }
+        product.getRelatedProducts().clear();
+        productRepository.save(product);
+        cartDetailRepository.deleteAllByProduct(product.getId());
         reviewRepository.deleteAllByProductId(id);
         productVariantRepository.deleteAllByProductId(id);
         productRepository.delete(product);

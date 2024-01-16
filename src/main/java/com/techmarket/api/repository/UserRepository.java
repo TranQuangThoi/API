@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificationExecutor<User> {
@@ -14,4 +15,5 @@ public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificati
     @Transactional
     @Modifying
     void deleteAllByAccountId(Long accountId);
+    List<User> findAllByMemberShip(Integer membership);
 }

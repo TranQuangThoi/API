@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/order")
@@ -166,6 +166,14 @@ public class OrderController extends ABasicController{
         }
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
         orderRepository.save(order);
+        if (order.getUser()!=null)
+        {
+            if (order.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED))
+            {
+                calculatePoint(order.getTotalMoney(),order.getUser());
+            }
+        }
+
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;
     }
@@ -358,5 +366,48 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
+    private void calculatePoint(Double price , User user)
+    {
+        Map<Double, Integer> pointsMapping = new HashMap<>();
+        pointsMapping.put(5000000.0, 5);
+        pointsMapping.put(10000000.0, 10);
+        pointsMapping.put(15000000.0, 15);
+        pointsMapping.put(20000000.0, 20);
+        pointsMapping.put(30000000.0, 30);
+        pointsMapping.put(40000000.0, 40);
+        pointsMapping.put(50000000.0, 50);
+        pointsMapping.put(60000000.0, 60);
+        pointsMapping.put(70000000.0, 70);
+        pointsMapping.put(80000000.0, 80);
+        pointsMapping.put(90000000.0, 90);
+
+        int additionalPoints = pointsMapping.entrySet().stream()
+                .filter(entry -> price <= entry.getKey())
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(100);
+        Integer point = user.getPoint() + additionalPoints;
+        user.setPoint(point);
+        Integer membership = null;
+        if (user.getPoint() <=10)
+        {
+            membership = UserBaseConstant.USER_KIND_NEW_MEMBERSHIP;
+        }
+        else if (user.getPoint() <=40)
+        {
+            membership = UserBaseConstant.USER_KIND_SILVER_MEMBERSHIP;
+        }else if (user.getPoint() <=80)
+        {
+            membership = UserBaseConstant.USER_KIND_GOLD_MEMBERSHIP;
+        }else if (user.getPoint() <=140)
+        {
+            membership = UserBaseConstant.USER_KIND_DIAMOND_MEMEBERSHIP;
+        }else if (user.getPoint() <=200)
+        {
+            membership = UserBaseConstant.USER_KIND_VIP_MEMEBERSHIP;
+        }
+        user.setMemberShip(membership);
+        userRepository.save(user);
+    }
 
 }

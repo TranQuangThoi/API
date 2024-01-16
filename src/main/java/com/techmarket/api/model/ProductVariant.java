@@ -13,10 +13,6 @@ import javax.persistence.*;
 @Getter
 @Setter
 public class ProductVariant extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
     @Column(columnDefinition = "DOUBLE DEFAULT 0")
     private Double price;
     private String color;

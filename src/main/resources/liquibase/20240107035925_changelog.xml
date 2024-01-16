@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="QThoi (generated)" id="1704599979056-3">
+        <createTable tableName="related_products">
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="related_product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1704599979056-4">
+        <addForeignKeyConstraint baseColumnNames="related_product_id" baseTableName="related_products" constraintName="FK4do8cghfdre52w50fyeo1wosa" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_product" validate="true"/>
+    </changeSet>
+    <changeSet author="QThoi (generated)" id="1704599979056-5">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="related_products" constraintName="FK4iqjrsljlsw4gkn9fg8bjryep" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="db_product" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

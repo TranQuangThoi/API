@@ -6,6 +6,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "db_product")
@@ -13,10 +15,6 @@ import javax.persistence.*;
 @Getter
 @Setter
 public class Product extends Auditable<String>{
-    @Id
-    @GenericGenerator(name = "idGenerator", strategy = "com.techmarket.api.service.id.IdGenerator")
-    @GeneratedValue(generator = "idGenerator")
-    private Long id;
     private String name;
     private Double price;
     @Column(name = "description", columnDefinition = "text")
@@ -34,5 +32,12 @@ public class Product extends Auditable<String>{
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "related_products",
+            joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "related_product_id", referencedColumnName = "id")
+    )
+    private List<Product> relatedProducts = new ArrayList<>();
 
 }

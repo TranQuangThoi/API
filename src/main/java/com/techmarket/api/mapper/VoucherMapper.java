@@ -18,10 +18,12 @@ public interface VoucherMapper {
     @Mapping(source = "percent", target = "percent")
     @Mapping(source = "expired", target = "expired")
     @Mapping(source = "kind", target = "kind")
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "amount",target = "amount")
     @BeanMapping(ignoreByDefault = true)
     @Named("createVoucher")
     Voucher fromCreateFormToEntity(CreateVoucherForm createForm);
-
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "title", target = "title")
     @Mapping(source = "content", target = "content")
     @Mapping(source = "percent", target = "percent")
@@ -30,6 +32,7 @@ public interface VoucherMapper {
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")
     @Mapping(source = "modifiedDate", target = "modifiedDate")
+    @Mapping(source = "amount",target = "amount")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToDto")
     VoucherDto fromEntityToDto(Voucher voucher);
@@ -42,6 +45,7 @@ public interface VoucherMapper {
     @Mapping(source = "expired", target = "expired")
     @Mapping(source = "kind", target = "kind")
     @Mapping(source = "status", target = "status")
+    @Mapping(source = "amount",target = "amount")
     @BeanMapping(ignoreByDefault = true)
     @Named("adminUpdateMapping")
     void fromUpdateFormToEntityVoucher(UpdateVoucherForm updateForm, @MappingTarget Voucher voucher);
