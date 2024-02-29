@@ -10,7 +10,7 @@ pipeline {
         IMAGE_NAME = "tech-market-service:${env.GIT_COMMIT}"
         IMAGE_TAR = "tech-market-service.tar"
     }
-
+//
     stages {
         stage('Build') {
             steps {
