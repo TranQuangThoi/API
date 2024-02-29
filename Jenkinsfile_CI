@@ -6,9 +6,9 @@ pipeline {
     }
 
     environment {
-        SERVICE_NAME = "tech-market"
-        IMAGE_NAME = "tech-market:${env.GIT_COMMIT}"
-        IMAGE_TAR = "tech-market.tar"
+        SERVICE_NAME = "tech-market-service"
+        IMAGE_NAME = "tech-market-service:${env.GIT_COMMIT}"
+        IMAGE_TAR = "tech-market-service.tar"
     }
 
     stages {
