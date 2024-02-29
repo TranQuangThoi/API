@@ -21,11 +21,11 @@ mvn spring-boot:run
 `RabitMq `
 
 ## Default account admin :
-`username:  superAdmin`
-`password: 123456`
+`username:`  superAdmin
+`password:` 123456
 ## Default account user ( you can register yourself and log in with your registered phone number)  :
-`username : 0966355046`
-`password : 123456789`
+`username :` 0966355046
+`password :` 123456789
 ## Default account employee :
-`username : employee`
-`password : 123456`
+`username :` employee
+`password :` 123456
