@@ -247,8 +247,8 @@ public class VoucherController extends ABasicController{
             }
         }
         notificationRepository.saveAll(notifications);
-        for (Notification notification: notifications){
-            notificationService.sendMessage(notification.getMsg(), notificationKind, notification.getIdUser());
-        }
+//        for (Notification notification: notifications){
+//            notificationService.sendMessage(notification.getMsg(), notificationKind, notification.getIdUser());
+//        }
     }
 }

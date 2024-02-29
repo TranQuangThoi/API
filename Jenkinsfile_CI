@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven-3.9.5'
+    }
+
+    environment {
+        SERVICE_NAME = "tech-market"
+        IMAGE_NAME = "tech-market:${env.GIT_COMMIT}"
+        IMAGE_TAR = "tech-market.tar"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building..'
+                sh 'mvn clean package -DskipTests=true'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+//                sh 'mvn test'
+            }
+        }
+        stage('Package Image') {
+            steps {
+                echo 'Docker build image....'
+                echo "Git SHA:  ${env.GIT_COMMIT}"
+                echo "Git branch: ${env.GIT_BRANCH}"
+
+                script {
+                    sh "docker build -t ${IMAGE_NAME} ."
+                    sh "docker images"
+
+//                    sh "docker save -o ${IMAGE_NAME}.tar ${IMAGE_NAME}"
+                }
+            }
+        }
+        stage('Push Image') {
+            steps {
+                echo "Push Image to Registry"
+//                script {
+//                    withCredentials([usernamePassword(credentialsId: 'naver-server-account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+//                        def remote = [:]
+//                        remote.user = USERNAME
+//                        remote.password = PASSWORD
+//
+//                        remote.name = "Naver dev"
+//                        remote.host = "175.45.200.78"
+//                        remote.allowAnyHosts = true
+//                        sshCommand remote:remote, command: "ls -l"
+//                        sshPut remote: remote, from: "${IMAGE_NAME}.tar", into: '/root/data/images'
+//                    }
+//                }
+            }
+        }
+
+        stage('Clean up') {
+            steps {
+                echo "Clean up artifact"
+//                sh "rm -r ${IMAGE_NAME}.tar"
+            }
+        }
+    }
+}

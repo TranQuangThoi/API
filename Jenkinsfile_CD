@@ -1,0 +1,102 @@
+def requiredParameters() {
+    if (params.GIT_SHA == '') {
+        error("Require GIT SHA to deploy")
+    }
+
+    if (params.ENV == '') {
+        error("Require ENV value to deploy")
+    }
+}
+
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'GIT_SHA', defaultValue: '', description: 'Input GIT SHA to deploy')
+        choice(name: 'ENV', choices: ['staging-aws', 'production'], description: 'Select environment to deploy')
+    }
+
+    environment {
+        ENVIRONMENT = "${params.ENV}"
+        SERVICE_NAME = "tech-market"
+        IMAGE_NAME = "${SERVICE_NAME}:${params.GIT_SHA}"
+        PORT_CONFIGURATION = "-p 8081:8081"
+        CONTAINER_NAME = "${SERVICE_NAME}-${params.GIT_SHA}"
+        PROFILE_CONFIGURATION = "-e SPRING_PROFILES_ACTIVE=${params.ENV}"
+        ENCRYPTION_CONFIGURATION = "-e jasypt_encryptor_password=${JASYPT_PW}"
+        AWS_VOLUME_CONFIGURATINON = "-v /home/ubuntu/data/tech_market_image:/data/tech_market_image"
+        NAVER_VOLUME_CONFIGURATINON = "-v /root/data/tech_market_image:/data/tech_market_image"
+    }
+
+    stages {
+        stage('Download artifact') {
+            steps {
+                echo "Download revision: ${params.GIT_SHA}"
+                script {
+                    if (ENVIRONMENT == "staging-naver") {
+                        echo "Load docker image: ${IMAGE_NAME}"
+                        withCredentials([usernamePassword(credentialsId: 'naver-server-account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            def remote = [:]
+                            remote.user = USERNAME
+                            remote.password = PASSWORD
+
+                            remote.name = "Naver dev"
+                            remote.host = "175.45.200.78"
+                            remote.allowAnyHosts = true
+                            sshCommand remote: remote, command: "docker load -i /root/data/images/${IMAGE_NAME}.tar"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Stop current') {
+            steps {
+                script {
+                    requiredParameters()
+                    echo "Stop previous version"
+
+                    if (ENVIRONMENT == "staging-naver") {
+                        echo "Load docker image: ${IMAGE_NAME}"
+                        withCredentials([usernamePassword(credentialsId: 'naver-server-account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            def remote = [:]
+                            remote.user = USERNAME
+                            remote.password = PASSWORD
+
+                            remote.name = "Naver dev"
+                            remote.host = "175.45.200.78"
+                            remote.allowAnyHosts = true
+                            sshCommand remote: remote, command: "docker ps -q --filter name=${SERVICE_NAME} | xargs -r docker rm -f"
+                        }
+                    } else {
+                        sh "docker ps -q --filter name=${SERVICE_NAME} | xargs -r docker rm -f"
+                    }
+                }
+            }
+        }
+        stage('Deploy EC2') {
+            steps {
+                script {
+                    echo "Deploy to ${ENVIRONMENT}"
+
+                    if (ENVIRONMENT == "staging-naver") {
+                        echo "Load docker image: ${IMAGE_NAME}"
+                        withCredentials([usernamePassword(credentialsId: 'naver-server-account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            def remote = [:]
+                            remote.user = USERNAME
+                            remote.password = PASSWORD
+
+                            remote.name = "Naver dev"
+                            remote.host = "175.45.200.78"
+                            remote.allowAnyHosts = true
+                            sshCommand remote: remote, command: "docker run -dit --name ${CONTAINER_NAME} ${PORT_CONFIGURATION} ${NAVER_VOLUME_CONFIGURATINON} ${VOLUME_CONFIGURATINON} ${PROFILE_CONFIGURATION} ${ENCRYPTION_CONFIGURATION} ${IMAGE_NAME}"
+                        }
+                    } else {
+                        sh "docker run -dit --name ${CONTAINER_NAME} ${PORT_CONFIGURATION} ${AWS_VOLUME_CONFIGURATINON} ${PROFILE_CONFIGURATION} ${ENCRYPTION_CONFIGURATION} ${IMAGE_NAME}"
+                        sh "docker ps"
+                    }
+                }
+            }
+        }
+    }
+}
