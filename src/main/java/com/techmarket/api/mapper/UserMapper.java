@@ -15,8 +15,10 @@ public interface UserMapper {
     @Mapping(source = "createdDate", target = "createdDate")
     @Mapping(source = "status",target = "status")
     @Mapping(source = "birthday",target = "birthday", dateFormat = "yyyy-MM-dd")
-    @Mapping(source ="account",target = "account",qualifiedByName="fromAccountToDto")
+    @Mapping(source ="account",target = "account",qualifiedByName="fromAccountForUser")
     @Mapping(source = "gender",target = "gender")
+    @Mapping(source = "memberShip",target = "memberShip")
+    @Mapping(source = "point",target = "point")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromUserToUserDto")
     UserDto fromEntityToUserDto(User user);

@@ -2,6 +2,7 @@ package com.techmarket.api.mapper;
 
 import com.techmarket.api.dto.account.AccountAutoCompleteDto;
 import com.techmarket.api.dto.account.AccountDto;
+import com.techmarket.api.dto.account.AccountForUser;
 import com.techmarket.api.form.user.SignUpUserForm;
 import com.techmarket.api.form.user.UpdateMyprofile;
 import com.techmarket.api.form.user.UpdateUserForm;
@@ -28,6 +29,20 @@ public interface AccountMapper {
     @BeanMapping(ignoreByDefault = true)
     @Named("fromAccountToDto")
     AccountDto fromAccountToDto(Account account);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "kind", target = "kind")
+    @Mapping(source = "username", target = "username")
+    @Mapping(source = "phone", target = "phone")
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "fullName", target = "fullName")
+    @Mapping(source = "lastLogin", target = "lastLogin")
+    @Mapping(source = "avatarPath", target = "avatar")
+    @Mapping(source = "isSuperAdmin", target = "isSuperAdmin")
+    @Mapping(source = "status",target = "status")
+    @BeanMapping(ignoreByDefault = true)
+    @Named("fromAccountForUser")
+    AccountForUser fromAccountForUser(Account account);
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "avatarPath", target = "avatarPath")

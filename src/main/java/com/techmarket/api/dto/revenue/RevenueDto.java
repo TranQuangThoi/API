@@ -1,8 +1,6 @@
 package com.techmarket.api.dto.revenue;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
@@ -11,4 +9,5 @@ public class RevenueDto {
 
     private Double revenue;
     private Long amount;
+    private Long amountUser;
 }
