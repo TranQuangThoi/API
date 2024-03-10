@@ -17,15 +17,15 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Page<Order> findAllByUserId(Long id , Pageable pageable);
     List<Order> findAllByUserId(Long id);
-    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (od)) " +
+    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (od) , count(distinct od.user)) " +
             "FROM Order od " +
             "where  od.state= :state")
     RevenueDto countAndSumRevenueTotal(@Param("state") Integer state);
-    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (od)) " +
+    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(SUM(od.totalMoney), COUNT(od), COUNT(DISTINCT od.user)) " +
             "FROM Order od " +
-            "where  od.state= :state "+
+            "WHERE od.state = :state " +
             "AND od.createdDate BETWEEN :startDate AND :endDate")
-    RevenueDto countAndSumRevenueByDate(@Param("state") Integer state,@Param("startDate") Date startDate ,@Param("endDate") Date endDate);
+    RevenueDto countAndSumRevenueByDate(@Param("state") Integer state, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
     @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueOfYearDto(SUM(od.totalMoney), MONTH(od.createdDate)) " +
             "FROM Order od " +
             "WHERE od.state = :state " +

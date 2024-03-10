@@ -44,6 +44,8 @@ public class RevenueStatisticsController {
         if (startDate!=null && endDate !=null)
         {
             revenueDto = orderRepository.countAndSumRevenueByDate(UserBaseConstant.ORDER_STATE_COMPLETED,startDate,endDate);
+//            Long amountUser = orderRepository.countUserBoughtItem(UserBaseConstant.ORDER_STATE_COMPLETED,startDate,endDate);
+//            revenueDto.setAmountUser(amountUser);
             apiMessageDto.setData(revenueDto);
             apiMessageDto.setMessage("get revenue success");
             return apiMessageDto;
