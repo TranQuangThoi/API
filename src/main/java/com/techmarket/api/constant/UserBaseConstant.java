@@ -74,6 +74,9 @@ public class UserBaseConstant {
 
     public static final Integer NOTIFICATION_KIND_NOTIFY_VOUCHER = 0;
 
+    public static final Integer REFUNDS_KIND_NOT_YET_PROCCESS = 0;
+    public static final Integer REFUNDS_KIND_PROCCESSED = 1;
+
     private UserBaseConstant(){
         throw new IllegalStateException("Utility class");
     }

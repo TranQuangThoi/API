@@ -155,5 +155,13 @@ public class ErrorCode {
      */
     public static final String NOTIFICATION_ERROR_NOT_FOUND ="ERROR-NOTIFICATION-0000";
 
+    /**
+     * Starting error code REFUNDS_EROR
+     *
+     */
+    public static final String REFUNDS_ERROR_NOT_FOUND ="ERROR-REFUNDS-0000";
+    public static final String REFUNDS_ERROR_COMPLETED ="ERROR-REFUNDS-0001";
+    public static final String REFUNDS_ERROR_EXITED ="ERROR-REFUNDS-0002";
+
 
 }
