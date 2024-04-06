@@ -35,12 +35,13 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>,
             "AND od.isReviewed = false")
     Boolean checkReviewProduct(@Param("state") Integer state,@Param("userId") Long userId ,@Param("orderDetailId") Long orderDetailId);
 
-    @Query("SELECT od.product_Id FROM OrderDetail od " +
+    @Query("SELECT od.product_Id,od.order.id FROM OrderDetail od " +
             "JOIN od.order o " +
             "WHERE o.user.id = :userId " +
+            "AND (:orderId IS NULL OR od.order.id = :orderId) " +
             "AND o.state = :state " +
             "AND od.isReviewed = false")
-    List<Long> findProductIdUnrated(@Param("state") Integer state,@Param("userId") Long userId);
+    List<Object[]> findProductIdUnrated(@Param("state") Integer state,@Param("userId") Long userId, @Param("orderId") Long orderId);
 
     @Query("SELECT od.product_Id, SUM(od.price) as totalPrice " +
             "FROM OrderDetail od " +

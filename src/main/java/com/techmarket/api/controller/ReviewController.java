@@ -5,10 +5,7 @@ import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.product.RateProductDto;
-import com.techmarket.api.dto.review.AmountReviewDto;
-import com.techmarket.api.dto.review.CountForEachStart;
-import com.techmarket.api.dto.review.MyReviewDto;
-import com.techmarket.api.dto.review.ReviewDto;
+import com.techmarket.api.dto.review.*;
 import com.techmarket.api.exception.UnauthorizationException;
 import com.techmarket.api.form.review.CreateReviewForm;
 import com.techmarket.api.form.review.FeedbackForm;
@@ -16,10 +13,12 @@ import com.techmarket.api.form.review.UpdateReviewForm;
 import com.techmarket.api.mapper.ProductMapper;
 import com.techmarket.api.mapper.ReviewMapper;
 import com.techmarket.api.model.*;
+import com.techmarket.api.model.criteria.ReviewCriteria;
 import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -52,20 +51,12 @@ public class ReviewController extends ABasicController{
     @Autowired
     private ProductVariantRepository productVariantRepository;
 
-    @GetMapping(value = "/get-by-product/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<ReviewDto>>> getByProduct(@PathVariable("id") Long id,Pageable pageable) {
+    @GetMapping(value = "/get-by-product", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<ReviewDto>>> getByProduct(@Valid ReviewCriteria reviewCriteria,Pageable pageable) {
         ApiMessageDto<ResponseListDto<List<ReviewDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<ReviewDto>> responseListDto =new ResponseListDto<>();
 
-        Product product = productRepository.findById(id).orElse(null);
-        if (product==null)
-        {
-            apiMessageDto.setMessage("Product Not found");
-            apiMessageDto.setResult(false);
-            apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
-            return apiMessageDto;
-        }
-        Page<Review> reviewList = reviewRepository.findAllByProductId(id ,pageable);
+        Page<Review> reviewList= reviewRepository.findAll(reviewCriteria.getCriteria(),pageable);
         responseListDto.setContent(reviewMapper.fromEntityListToDtoList(reviewList.getContent()));
         responseListDto.setTotalPages(reviewList.getTotalPages());
         responseListDto.setTotalElements(reviewList.getTotalElements());
@@ -74,20 +65,12 @@ public class ReviewController extends ABasicController{
         apiMessageDto.setMessage("get review success");
         return apiMessageDto;
     }
-    @GetMapping(value = "/get-by-product-public/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<ReviewDto>>> getByProductPublic(@PathVariable("id") Long id,Pageable pageable) {
+    @GetMapping(value = "/get-by-product-public", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<ReviewDto>>> getByProductPublic(@Valid ReviewCriteria reviewCriteria,Pageable pageable) {
         ApiMessageDto<ResponseListDto<List<ReviewDto>>> apiMessageDto = new ApiMessageDto<>();
         ResponseListDto<List<ReviewDto>> responseListDto =new ResponseListDto<>();
-
-        Product product = productRepository.findById(id).orElse(null);
-        if (product==null)
-        {
-            apiMessageDto.setMessage("Product Not found");
-            apiMessageDto.setResult(false);
-            apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
-            return apiMessageDto;
-        }
-        Page<Review> reviewList= reviewRepository.findAllByProductIdAndStatus(id,UserBaseConstant.STATUS_ACTIVE,pageable);
+        reviewCriteria.setStatus(UserBaseConstant.STATUS_ACTIVE);
+        Page<Review> reviewList= reviewRepository.findAll(reviewCriteria.getCriteria(),pageable);
 
         responseListDto.setContent(reviewMapper.fromEntityListToDtoList(reviewList.getContent()));
         responseListDto.setTotalPages(reviewList.getTotalPages());
@@ -98,7 +81,7 @@ public class ReviewController extends ABasicController{
         return apiMessageDto;
     }
     @GetMapping(value = "/get-my-review", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<List<MyReviewDto>> getMyReview() {
+    public ApiMessageDto<List<MyReviewDto>> getMyReview(@Valid ReviewCriteria reviewCriteria,@RequestParam(required = false) Long orderId) {
         ApiMessageDto<List<MyReviewDto>> apiMessageDto = new ApiMessageDto<>();
         List<MyReviewDto> list = new ArrayList<>();
 
@@ -124,8 +107,16 @@ public class ReviewController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-       List<Review> reviewList = reviewRepository.findAllByUserId(user.getId());
-       list= reviewMapper.fromEntityToGetMyReviewDtoList(reviewList);
+       reviewCriteria.setUserId(user.getId());
+        if(orderId!=null)
+        {
+            List<Review> reviewList = reviewRepository.getReviewByUserAndOrderId(user.getId(),orderId);
+            list= reviewMapper.fromEntityToGetMyReviewDtoList(reviewList);
+        }else
+        {
+            List<Review> reviewList = reviewRepository.findAll(reviewCriteria.getCriteria());
+            list= reviewMapper.fromEntityToGetMyReviewDtoList(reviewList);
+        }
         for (MyReviewDto item : list)
         {
             OrderDetail orderDetail = orderDetailRepository.findById(item.getOrderDetail()).orElse(null);
@@ -218,9 +209,9 @@ public class ReviewController extends ABasicController{
     }
 
     @GetMapping(value = "/get-unrated-product", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<RateProductDto>>> getUnratedProduct() {
-        ApiMessageDto<ResponseListDto<List<RateProductDto>>> apiMessageDto= new ApiMessageDto<>();
-        ResponseListDto<List<RateProductDto>> responseListDto = new ResponseListDto<>();
+    public ApiMessageDto<ResponseListDto<List<UnRatedDto>>> getUnratedProduct(@RequestParam(required = false) Long orderId) {
+        ApiMessageDto<ResponseListDto<List<UnRatedDto>>> apiMessageDto= new ApiMessageDto<>();
+        ResponseListDto<List<UnRatedDto>> responseListDto = new ResponseListDto<>();
         String tokenExist = getCurrentToken();
         if (tokenExist==null)
         {
@@ -235,25 +226,28 @@ public class ReviewController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        List<Long> productId = orderDetailRepository.findProductIdUnrated(UserBaseConstant.ORDER_STATE_COMPLETED,user.getId());
+        List<Object[]> id = orderDetailRepository.findProductIdUnrated(UserBaseConstant.ORDER_STATE_COMPLETED,user.getId(),orderId);
         List<Product> productList = new ArrayList<>();
-        if (productId.size()!=0)
+        List<UnRatedDto> unRatedDtoList = new ArrayList<>();
+        for(Object[] row : id)
         {
-            for (Long item : productId)
+            UnRatedDto unRatedDto = new UnRatedDto();
+            Long productId = (long) row[0];
+            Long OrderId = (Long) row[1];
+            Product product = productRepository.findById(productId).orElse(null);
+            if (product==null)
             {
-                Product product = productRepository.findById(item).orElse(null);
-                if (product==null)
-                {
-                    apiMessageDto.setResult(false);
-                    apiMessageDto.setMessage("Product not found");
-                    apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
-                    return apiMessageDto;
-                }
-                productList.add(product);
-
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("Product not found");
+                apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+                return apiMessageDto;
             }
+
+            unRatedDto.setRateProductDto(productMapper.toProductRateDto(product));
+            unRatedDto.setOrderId(OrderId);
+            unRatedDtoList.add(unRatedDto);
         }
-        responseListDto.setContent(productMapper.toProductRateListDto(productList));
+        responseListDto.setContent(unRatedDtoList);
         apiMessageDto.setData(responseListDto);
         return apiMessageDto;
     }

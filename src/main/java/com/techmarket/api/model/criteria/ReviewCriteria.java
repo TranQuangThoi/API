@@ -1,5 +1,8 @@
 package com.techmarket.api.model.criteria;
 
+import com.techmarket.api.model.OrderDetail;
+import com.techmarket.api.model.Product;
+import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.model.Review;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.Data;
@@ -17,6 +20,7 @@ public class ReviewCriteria {
     private Long productId;
     private Integer status;
     private String message;
+    private Long parentId;
 
     public Specification<Review> getCriteria() {
         return new Specification<Review>() {
@@ -44,6 +48,9 @@ public class ReviewCriteria {
 
                 if (!StringUtils.isEmpty(getMessage())) {
                     predicates.add(cb.like(cb.lower(root.get("message")), "%" + getMessage().toLowerCase() + "%"));
+                }
+                if(getParentId() != null){
+                    predicates.add(cb.equal(root.get("parentId"), getParentId()));
                 }
 
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));

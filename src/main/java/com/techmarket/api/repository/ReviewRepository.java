@@ -18,7 +18,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecif
 
     Page<Review> findAllByProductId(Long id, Pageable pageable);
     Page<Review> findAllByProductIdAndStatus(Long id, Integer status, Pageable pageable);
-    List<Review> findAllByUserId(Long id);
+
+    @Query("SELECT rv FROM Review rv " +
+    "JOIN OrderDetail od ON rv.orderDetail = od.id "+
+    "JOIN Order o ON od.order.id = o.id " +
+    "WHERE rv.user.id = :userId AND o.id = :orderId")
+    List<Review> getReviewByUserAndOrderId(@Param("userId") long userId , @Param("orderId") long orderId);
     @Transactional
     void deleteAllByProductId(Long id);
     @Transactional

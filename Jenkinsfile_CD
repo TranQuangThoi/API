@@ -41,7 +41,7 @@ pipeline {
                             remote.password = PASSWORD
 
                             remote.name = "Naver dev"
-                            remote.host = "175.45.200.78"
+                            remote.host = "103.188.82.155"
                             remote.allowAnyHosts = true
                             sshCommand remote: remote, command: "docker load -i /root/data/images/${IMAGE_NAME}.tar"
                         }
@@ -64,7 +64,7 @@ pipeline {
                             remote.password = PASSWORD
 
                             remote.name = "Naver dev"
-                            remote.host = "175.45.200.78"
+                            remote.host = "103.188.82.155"
                             remote.allowAnyHosts = true
                             sshCommand remote: remote, command: "docker ps -q --filter name=${SERVICE_NAME} | xargs -r docker rm -f"
                         }
@@ -87,7 +87,7 @@ pipeline {
                             remote.password = PASSWORD
 
                             remote.name = "Naver dev"
-                            remote.host = "175.45.200.78"
+                            remote.host = "103.188.82.155"
                             remote.allowAnyHosts = true
                             sshCommand remote: remote, command: "docker run -dit --name ${CONTAINER_NAME} ${PORT_CONFIGURATION} ${NAVER_VOLUME_CONFIGURATINON} ${VOLUME_CONFIGURATINON} ${PROFILE_CONFIGURATION} ${ENCRYPTION_CONFIGURATION} ${IMAGE_NAME}"
                         }
