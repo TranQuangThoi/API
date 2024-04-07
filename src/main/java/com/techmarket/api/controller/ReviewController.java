@@ -1,5 +1,7 @@
 package com.techmarket.api.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techmarket.api.constant.UserBaseConstant;
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
@@ -14,6 +16,9 @@ import com.techmarket.api.mapper.ProductMapper;
 import com.techmarket.api.mapper.ReviewMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.ReviewCriteria;
+import com.techmarket.api.notification.NotificationService;
+import com.techmarket.api.notification.dto.OrderNotificationMessage;
+import com.techmarket.api.notification.dto.ReviewNotification;
 import com.techmarket.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,6 +55,12 @@ public class ReviewController extends ABasicController{
     private ProductMapper productMapper;
     @Autowired
     private ProductVariantRepository productVariantRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @GetMapping(value = "/get-by-product", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ReviewDto>>> getByProduct(@Valid ReviewCriteria reviewCriteria,Pageable pageable) {
@@ -324,6 +335,8 @@ public class ReviewController extends ABasicController{
     @PostMapping(value = "/feed-back", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> feedBack(@Valid @RequestBody FeedbackForm feedbackForm, BindingResult bindingResult) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        Long accountId = getCurrentUser();
+        User user = userRepository.findByAccountId(accountId).orElse(null);
         Review review = reviewRepository.findById(feedbackForm.getReviewId()).orElse(null);
         if (review==null)
         {
@@ -335,10 +348,37 @@ public class ReviewController extends ABasicController{
         feedback.setMessage(feedbackForm.getMessage());
         feedback.setParentId(review);
         reviewRepository.save(feedback);
+        createNotificationAndSendMessage(UserBaseConstant.NOTIFICATION_STATE_SENT,review,UserBaseConstant.NOTIFICATION_KIND_NOTIFY_REVIEW);
+
         apiMessageDto.setMessage("feedback success");
         return apiMessageDto;
 
     }
-
-
+    public String convertObjectToJson(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+    private String getJsonMessage(Review review , Notification notification)
+    {
+        ReviewNotification mesage = new ReviewNotification();
+        mesage.setReviewId(review.getId());
+        mesage.setProductId(review.getProduct().getId());
+        mesage.setNotificationId(notification.getId());
+        return convertObjectToJson(mesage);
+    }
+    private Notification createNotification(Integer notificationState, Integer notificationKind, Review review, Long userId) {
+        Notification notification = notificationService.createNotification(notificationState, notificationKind);
+        String jsonMessage = getJsonMessage(review, notification);
+        notification.setIdUser(userId);
+        notification.setMsg(jsonMessage);
+        return notification;
+    }
+    private void createNotificationAndSendMessage(Integer notificationState, Review review, Integer notificationKind) {
+        Long userId = review.getUser().getId();
+        Notification notification = createNotification(notificationState,notificationKind,review,userId);
+        notificationRepository.save(notification);
+    }
 }

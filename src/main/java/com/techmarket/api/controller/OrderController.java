@@ -1,5 +1,7 @@
 package com.techmarket.api.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techmarket.api.constant.UserBaseConstant;
 //import com.techmarket.api.cookie.cookie;
 import com.techmarket.api.dto.ApiMessageDto;
@@ -13,6 +15,8 @@ import com.techmarket.api.form.order.*;
 import com.techmarket.api.mapper.OrderMapper;
 import com.techmarket.api.model.*;
 import com.techmarket.api.model.criteria.OrderCriteria;
+import com.techmarket.api.notification.NotificationService;
+import com.techmarket.api.notification.dto.OrderNotificationMessage;
 import com.techmarket.api.repository.*;
 import com.techmarket.api.service.EmailService;
 import com.techmarket.api.service.OrderService;
@@ -30,10 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/v1/order")
@@ -47,10 +48,6 @@ public class OrderController extends ABasicController{
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ProductVariantRepository productVariantRepository;
-    @Autowired
-    private VoucherRepository voucherRepository;
-    @Autowired
     private OrderService orderService;
     @Autowired
     private UserBaseOTPService userBaseOTPService;
@@ -62,6 +59,12 @@ public class OrderController extends ABasicController{
     private CartRepository cartRepository;
     @Autowired
     private AddressRepository addressRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -136,6 +139,7 @@ public class OrderController extends ABasicController{
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
 
         Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
+        Integer oldState = order.getState();
         if (order ==null)
         {
             apiMessageDto.setResult(false);
@@ -153,6 +157,7 @@ public class OrderController extends ABasicController{
         if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_CANCELED))
         {
             orderService.canelOrder(updateOrder.getId());
+            orderRepository.save(order);
         }
         if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED) && order.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_BANK_TRANFER))
         {
@@ -173,7 +178,10 @@ public class OrderController extends ABasicController{
                 calculatePoint(order.getTotalMoney(),order.getUser());
             }
         }
-
+        if(!updateOrder.getState().equals(oldState))
+        {
+            createNotificationAndSendMessage(UserBaseConstant.NOTIFICATION_STATE_SENT,order,UserBaseConstant.NOTIFICATION_KIND_NOTIFY_STATE_ORDER);
+        }
         apiMessageDto.setMessage("update status success");
         return apiMessageDto;
     }
@@ -409,5 +417,34 @@ public class OrderController extends ABasicController{
         user.setMemberShip(membership);
         userRepository.save(user);
     }
+    public String convertObjectToJson(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
 
+    private String getJsonMessage(Order order , Notification notification)
+    {
+        OrderNotificationMessage mesage = new OrderNotificationMessage();
+        mesage.setOrderid(order.getId());
+        mesage.setOrderCode(order.getOrderCode());
+        mesage.setUserId(order.getUser().getId());
+        mesage.setNotificationId(notification.getId());
+        mesage.setStateOrder(order.getState());
+        return convertObjectToJson(mesage);
+    }
+    private Notification createNotification(Integer notificationState, Integer notificationKind, Order order, Long userId) {
+        Notification notification = notificationService.createNotification(notificationState, notificationKind);
+        String jsonMessage = getJsonMessage(order, notification);
+        notification.setIdUser(userId);
+        notification.setMsg(jsonMessage);
+        return notification;
+    }
+    private void createNotificationAndSendMessage(Integer notificationState, Order order, Integer notificationKind) {
+        Long userId = order.getUser().getId();
+        Notification notification = createNotification(notificationState,notificationKind,order,userId);
+        notificationRepository.save(notification);
+    }
 }

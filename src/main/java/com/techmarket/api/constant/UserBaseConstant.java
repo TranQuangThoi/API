@@ -73,6 +73,8 @@ public class UserBaseConstant {
     public static final Integer NOTIFICATION_STATE_READ = 1;
 
     public static final Integer NOTIFICATION_KIND_NOTIFY_VOUCHER = 0;
+    public static final Integer NOTIFICATION_KIND_NOTIFY_STATE_ORDER = 1;
+    public static final Integer NOTIFICATION_KIND_NOTIFY_REVIEW = 2;
 
     public static final Integer REFUNDS_KIND_NOT_YET_PROCCESS = 0;
     public static final Integer REFUNDS_KIND_PROCCESSED = 1;

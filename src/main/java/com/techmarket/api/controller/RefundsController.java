@@ -38,7 +38,7 @@ public class RefundsController extends ABasicController{
     private RefundsMapper refundsMapper;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_L')")
+    @PreAuthorize("hasRole('RF_L')")
     public ApiMessageDto<ResponseListDto<List<RefundsDto>>> getList(@Valid RefundsCriteria refundsCriteria, Pageable pageable){
 
         ApiMessageDto<ResponseListDto<List<RefundsDto>>> apiMessageDto = new ApiMessageDto<>();
@@ -53,7 +53,7 @@ public class RefundsController extends ABasicController{
     }
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_L')")
+    @PreAuthorize("hasRole('RF_V')")
     public ApiMessageDto<RefundsDto> getRefunds(@PathVariable("id") long id){
 
         ApiMessageDto<RefundsDto> apiMessageDto = new ApiMessageDto<>();
@@ -72,7 +72,7 @@ public class RefundsController extends ABasicController{
     }
 
     @PutMapping(value = "/change-state",produces = MediaType.APPLICATION_JSON_VALUE)
-//    @PreAuthorize("hasRole('PR_C')")
+    @PreAuthorize("hasRole('RF_CT')")
     public ApiMessageDto<String> changeState(@Valid @RequestBody ChangeStateRefunds changeStateRefunds, BindingResult bindingResult)
     {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
