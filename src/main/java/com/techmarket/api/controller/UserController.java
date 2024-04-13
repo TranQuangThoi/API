@@ -362,16 +362,19 @@ public class UserController extends ABasicController{
                 return apiMessageDto;
             }
         }
-        if (!passwordEncoder.matches(updateMyprofile.getOldPassword(),account.getPassword()))
+        if(updateMyprofile.getOldPassword()!=null)
         {
-            apiMessageDto.setResult(false);
-            apiMessageDto.setMessage("password is incorrect");
-            apiMessageDto.setCode(ErrorCode.USER_ERROR_WRONG_PASSWORD);
-            return apiMessageDto;
-        }
-        if (StringUtils.isNoneBlank(updateMyprofile.getNewPassword()))
-        {
-            account.setPassword(passwordEncoder.encode(updateMyprofile.getNewPassword()));
+            if (!passwordEncoder.matches(updateMyprofile.getOldPassword(),account.getPassword()))
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("password is incorrect");
+                apiMessageDto.setCode(ErrorCode.USER_ERROR_WRONG_PASSWORD);
+                return apiMessageDto;
+            }
+            if (StringUtils.isNoneBlank(updateMyprofile.getNewPassword()))
+            {
+                account.setPassword(passwordEncoder.encode(updateMyprofile.getNewPassword()));
+            }
         }
 
         if (updateMyprofile.getBirthday()!=null)
