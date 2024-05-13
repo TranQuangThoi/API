@@ -20,6 +20,7 @@ mvn spring-boot:run
 `Spring Data JPA`
 `Cloudinary`
 `RabitMq `
+`OAuth2 `
 
 ## Default account admin :
 `username:`  superAdmin
