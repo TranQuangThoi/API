@@ -24,7 +24,6 @@ public class UpdateMyprofile {
     private Date birthday;
     @ApiModelProperty(name = "newPassword")
     private String newPassword;
-    @NotEmpty(message = "oldPassword cannot be empty")
     @ApiModelProperty(name = "oldPassword")
     private String oldPassword;
     @ApiModelProperty(name = "avatarPath")
