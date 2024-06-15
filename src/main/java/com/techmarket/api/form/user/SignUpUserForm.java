@@ -12,12 +12,14 @@ import java.util.Date;
 @ApiModel
 public class SignUpUserForm {
 
-    @ApiModelProperty(name = "email")
+    @ApiModelProperty(name = "phone")
+    private String phone;
+    @ApiModelProperty(name = "email",required = true)
     @Email
     private String email;
-    @NotEmpty(message = "phone cant not be null")
-    @ApiModelProperty(name = "phone",required = true)
-    private String phone;
+    @NotEmpty(message = "user name can't not be null")
+    @ApiModelProperty(name = "username",required = true)
+    private String userName;
     @NotEmpty(message = "password cant not be null")
     @ApiModelProperty(name = "password", required = true)
     private String password;

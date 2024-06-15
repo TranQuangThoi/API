@@ -127,7 +127,6 @@ public class EmailService {
                 "</head>" +
                 "<body>" +
                 "    <div class=\"container\">" +
-                "        <div class=\"fullName\">Hello %s</div>" +
                 "        <h1>Mã xác nhận</h1>" +
                 "        <p>Cảm ơn vì đăng ký với chúng tôi.Mã xác nhận (OTP) của bạn là:</p>" +
                 "        <div class=\"otp\">%s</div>" +
@@ -141,7 +140,7 @@ public class EmailService {
                 "</body>" +
                 "</html>";
 
-        mimeMessageHelper.setText(String.format(emailContent, fullName, otp), true);
+        mimeMessageHelper.setText(String.format(emailContent, otp), true);
 
         emailSender.send(mimeMessage);
     }

@@ -8,6 +8,7 @@ import com.techmarket.api.dto.ApiResponse;
 import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.account.ForgetPasswordDto;
+import com.techmarket.api.dto.account.RequestForgetPasswordForm;
 import com.techmarket.api.dto.user.UserAutoCompleteDto;
 import com.techmarket.api.dto.user.UserDto;
 import com.techmarket.api.form.account.ForgetPasswordForm;
@@ -79,10 +80,10 @@ public class UserController extends ABasicController{
     public ApiMessageDto<ForgetPasswordDto> create(@Valid @RequestBody SignUpUserForm signUpUserForm, BindingResult bindingResult) throws MessagingException {
         ApiMessageDto<ForgetPasswordDto> apiMessageDto = new ApiMessageDto<>();
 
-            Account accountByPhone = accountRepository.findAccountByPhone(signUpUserForm.getPhone());
-            if (accountByPhone!=null)
+            Account accountByUsername = accountRepository.findAccountByUsername(signUpUserForm.getUserName());
+            if (accountByUsername!=null)
             {
-                apiMessageDto.setMessage("phone number already exists");
+                apiMessageDto.setMessage("user name already exists");
                 apiMessageDto.setCode(ErrorCode.USER_ERROR_EXIST);
                 apiMessageDto.setResult(false);
                 return apiMessageDto;
@@ -134,6 +135,36 @@ public class UserController extends ABasicController{
         return apiMessageDto;
     }
 
+    @PostMapping(value = "/request-send-mail", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiResponse<ForgetPasswordDto> requestSendMail(@Valid @RequestBody RequestForgetPasswordForm forgetForm, BindingResult bindingResult)throws MessagingException {
+        ApiResponse<ForgetPasswordDto> apiMessageDto = new ApiResponse<>();
+        Account account = accountRepository.findAccountByEmail(forgetForm.getEmail());
+        if (account == null) {
+            apiMessageDto.setMessage("account not found with this email");
+            apiMessageDto.setResult(false);
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+
+        String otp = userBaseApiService.getOTPForgetPassword();
+        account.setAttemptCode(0);
+        account.setResetPwdCode(otp);
+        account.setResetPwdTime(new Date());
+        accountRepository.save(account);
+
+        //send email
+//        userBaseApiService.sendEmail(account.getEmail(),"OTP: "+otp, "Reset password",false);
+        emailService.sendOtpToEmail(account.getFullName(),account.getEmail(),otp);
+
+        ForgetPasswordDto forgetPasswordDto = new ForgetPasswordDto();
+        String hash = AESUtils.encrypt (account.getId()+";"+otp, true);
+        forgetPasswordDto.setIdHash(hash);
+
+        apiMessageDto.setResult(true);
+        apiMessageDto.setData(forgetPasswordDto);
+        apiMessageDto.setMessage("Send OTP to mail success, please check email.");
+        return  apiMessageDto;
+    }
     @PostMapping(value = "/confirm_otp", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResponse<String> forgetPassword(@Valid @RequestBody ConfirmOtp confirmOtp, BindingResult bindingResult){
         ApiResponse<String> apiMessageDto = new ApiResponse<>();
