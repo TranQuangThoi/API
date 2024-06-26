@@ -4,8 +4,11 @@ import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import com.techmarket.api.Transaction.PaymentService;
+import com.techmarket.api.Transaction.VnPayService;
 import com.techmarket.api.dto.ApiMessageDto;
+import com.techmarket.api.dto.ApiResponse;
 import com.techmarket.api.dto.ErrorCode;
+import com.techmarket.api.dto.paymentMethod.VNPAYDto;
 import com.techmarket.api.form.transaction.CreatePaymentForm;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.model.User;
@@ -14,11 +17,14 @@ import com.techmarket.api.repository.UserRepository;
 import com.techmarket.api.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +42,8 @@ public class TransactionController extends ABasicController{
     APIContext apiContext;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private VnPayService vnPayService;
     @Autowired
     private EmailService emailService;
 
@@ -114,5 +122,55 @@ public class TransactionController extends ABasicController{
 
         apiMessageDto.setMessage("payment success");
         return apiMessageDto;
+    }
+
+    @GetMapping("/vn-pay")
+    public ApiMessageDto<VNPAYDto> pay(HttpServletRequest request,@Valid @RequestBody CreatePaymentForm createPaymentForm) {
+        Order order = orderRepository.findById(createPaymentForm.getOrderId()).orElse(null);
+        ApiMessageDto<VNPAYDto> apiResponse = new ApiMessageDto<>();
+        if (order==null)
+        {
+            apiResponse.setMessage("Not found order");
+            apiResponse.setCode(ErrorCode.ORDER_ERROR_NOT_FOUND);
+            return apiResponse;
+        }
+        apiResponse = vnPayService.createVnPayPayment(request,createPaymentForm,order);
+        return apiResponse;
+    }
+    @GetMapping("/vn-pay-callback")
+    public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws  Exception{
+
+
+        String status = request.getParameter("vnp_ResponseCode");
+        String vnOrderInfo = request.getParameter("vnp_OrderInfo");
+        String [] A = vnOrderInfo.split("  ");
+
+        long idOrder = Long.parseLong(A[1]);
+        String urlSuccess= A[2];
+        String urlCancel= A[3];
+        System.out.println("orderId :"+ idOrder);
+        Order order = orderRepository.findById(idOrder).orElse(null);
+        if(order==null)
+        {
+            throw new Exception("Not found order");
+        }
+
+        if (status.equals("00")) {
+
+            order.setIsPaid(true);
+            orderRepository.save(order);
+            if (order.getEmail()!=null)
+            {
+                emailService.sendOrderPaidToEmail(order,order.getEmail());
+            }
+            response.sendRedirect(urlSuccess);
+
+        } else {
+            if (order.getEmail()!=null)
+            {
+                emailService.sendOrderPaidToEmail(order,order.getEmail());
+            }
+            response.sendRedirect(urlCancel);
+        }
     }
 }

@@ -381,6 +381,17 @@ public class EmailService {
         mimeMessageHelper.setTo(email);
         mimeMessageHelper.setSubject("Bạn đã đặt hàng thành công");
         List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrderId(order.getId());
+        String paymentMethod ;
+        if (order.getPaymentMethod() == 0)
+        {
+            paymentMethod="Thanh toán khi nhận hàng";
+        }else if (order.getPaymentMethod()==1)
+        {
+            paymentMethod="PayPal";
+        }else
+        {
+            paymentMethod="VNPAY";
+        }
         String payment ;
         if (!order.getIsPaid())
         {
@@ -501,7 +512,7 @@ public class EmailService {
         String formatTotal = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(order.getTotalMoney());
         orderContent += String.format(
                 "        </table>" +
-                        "        <p><strong>Phương thức thanh toán:</strong> Paypal</p>" +
+                        "        <p><strong>Phương thức thanh toán:</strong>" +paymentMethod+ "</p>" +
                         "        <p><strong>Tổng tiền:</strong> %s</p>" +
                         "        <p><strong>Trạng thái thanh toán:</strong>" + payment+ "</p>" +
                         "        <p><strong>Cảm ơn bạn đã tin tưởng và lựa chọn chúng tôi!</strong></p>" +
