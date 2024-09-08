@@ -17,12 +17,14 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Page<Order> findAllByUserId(Long id , Pageable pageable);
     List<Order> findAllByUserId(Long id);
-    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (od) , count(distinct od.user)) " +
+    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(sum (od.totalMoney) , count (DISTINCT od.id) , count(distinct od.user),COUNT(DISTINCT odetail.product_Id)) " +
             "FROM Order od " +
+            "JOIN OrderDetail odetail ON od.id = odetail.order.id " +
             "where  od.state= :state")
     RevenueDto countAndSumRevenueTotal(@Param("state") Integer state);
-    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(SUM(od.totalMoney), COUNT(od), COUNT(DISTINCT od.user)) " +
+    @Query("SELECT NEW com.techmarket.api.dto.revenue.RevenueDto(SUM(od.totalMoney), COUNT(DISTINCT od.id), COUNT(DISTINCT od.user), COUNT(DISTINCT odetail.product_Id)) " +
             "FROM Order od " +
+            "JOIN OrderDetail odetail ON od.id = odetail.order.id " +
             "WHERE od.state = :state " +
             "AND od.createdDate BETWEEN :startDate AND :endDate")
     RevenueDto countAndSumRevenueByDate(@Param("state") Integer state, @Param("startDate") Date startDate, @Param("endDate") Date endDate);

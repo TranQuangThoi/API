@@ -10,4 +10,5 @@ public class RevenueDto {
     private Double revenue;
     private Long amount;
     private Long amountUser;
+    private Long amountProduct;
 }

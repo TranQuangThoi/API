@@ -10,6 +10,7 @@ import com.techmarket.api.model.Product;
 import com.techmarket.api.repository.OrderDetailRepository;
 import com.techmarket.api.repository.OrderRepository;
 import com.techmarket.api.repository.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,10 +23,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static java.lang.Math.log;
+
 
 @RestController
 @RequestMapping("/v1/revenue")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@Slf4j
 public class RevenueStatisticsController {
 
     @Autowired
@@ -46,6 +50,7 @@ public class RevenueStatisticsController {
             revenueDto = orderRepository.countAndSumRevenueByDate(UserBaseConstant.ORDER_STATE_COMPLETED,startDate,endDate);
 //            Long amountUser = orderRepository.countUserBoughtItem(UserBaseConstant.ORDER_STATE_COMPLETED,startDate,endDate);
 //            revenueDto.setAmountUser(amountUser);
+            log.info("order: " + revenueDto.getAmount() +"  product: "+revenueDto.getAmountProduct());
             apiMessageDto.setData(revenueDto);
             apiMessageDto.setMessage("get revenue success");
             return apiMessageDto;
