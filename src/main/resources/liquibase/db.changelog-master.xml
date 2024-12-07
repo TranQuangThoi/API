@@ -24,5 +24,6 @@
     <include file="20240112154907_changelog.xml" relativeToChangelogFile="true"/>
     <include file="20240113042708_changelog.xml" relativeToChangelogFile="true"/>
     <include file="20240323150019_changelog.xml" relativeToChangelogFile="true"/>
-
+    <!--add table images and refactor imgaes in productvariant-->
+    <include file="20240908040538_changelog.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

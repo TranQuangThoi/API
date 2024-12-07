@@ -15,7 +15,7 @@ public interface CartDetailMapper {
     @Mapping(source = "productVariant.id",target = "productVariantId")
     @Mapping(source = "productVariant.price",target = "price")
     @Mapping(source = "productVariant.color",target = "color")
-    @Mapping(source = "productVariant.image",target = "image")
+//    @Mapping(source = "productVariant.image",target = "image")
     @Mapping(source = "productVariant.totalStock",target = "totalStock")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToCartDto")

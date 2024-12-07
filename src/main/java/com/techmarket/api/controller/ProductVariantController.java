@@ -2,10 +2,13 @@ package com.techmarket.api.controller;
 
 import com.techmarket.api.dto.ApiMessageDto;
 import com.techmarket.api.dto.ErrorCode;
+import com.techmarket.api.dto.productVariant.CreateProductVariant;
 import com.techmarket.api.form.productVariant.CreateProductVariantForm;
 import com.techmarket.api.mapper.ProductVariantMapper;
+import com.techmarket.api.model.Images;
 import com.techmarket.api.model.Product;
 import com.techmarket.api.model.ProductVariant;
+import com.techmarket.api.repository.ImageRepository;
 import com.techmarket.api.repository.ProductRepository;
 import com.techmarket.api.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/product-variant")
@@ -28,6 +33,8 @@ public class ProductVariantController extends ABasicController{
     private ProductRepository productRepository;
     @Autowired
     private ProductVariantMapper productVariantMapper;
+    @Autowired
+    private ImageRepository imageRepository;
 
     @DeleteMapping(value = "/delete/{id}")
     @PreAuthorize("hasRole('PROV_D')")
@@ -74,6 +81,18 @@ public class ProductVariantController extends ABasicController{
         int totalStock = createProductVariantForm.getTotalStock() + productExist.getTotalInStock();
         productExist.setTotalInStock(totalStock);
         productRepository.save(productExist);
+
+        List<String> listImage = createProductVariantForm.getFile();
+        List<Images> saveImage = new ArrayList<>();
+        for(String l : listImage)
+        {
+            Images images = new Images();
+            images.setLink(l);
+            images.setProductVariant(productVariant);
+            saveImage.add(images);
+        }
+        imageRepository.saveAll(saveImage);
+
         apiMessageDto.setMessage("create product success");
         return apiMessageDto;
     }

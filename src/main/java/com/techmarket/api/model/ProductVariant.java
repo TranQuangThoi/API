@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "db_product_variant")
@@ -16,7 +17,6 @@ public class ProductVariant extends Auditable<String>{
     @Column(columnDefinition = "DOUBLE DEFAULT 0")
     private Double price;
     private String color;
-    private String image;
     private Integer totalStock;
     @ManyToOne
     @JoinColumn(name = "product_id")
