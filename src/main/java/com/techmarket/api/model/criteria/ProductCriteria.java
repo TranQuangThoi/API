@@ -25,6 +25,8 @@ public class ProductCriteria {
     private String brandName;
     private String categoryName;
     private String avgStart;
+    private Double priceStart;
+    private Double priceEnd;
 
 
     public Specification<Product> getSpecification() {
@@ -84,6 +86,14 @@ public class ProductCriteria {
                 if(getAvgStart()!=null)
                 {
                     predicates.add(cb.equal(root.get("avgStart"),getAvgStart()));
+                }
+                if(getPriceStart()!=null)
+                {
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("price"), getPriceStart()));
+                }
+                if(getPriceEnd()!=null)
+                {
+                    predicates.add(cb.lessThanOrEqualTo(root.get("price"), getPriceEnd()));
                 }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }

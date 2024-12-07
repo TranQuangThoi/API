@@ -18,6 +18,8 @@ public class BrandCriteria {
     private String name;
     private Integer status;
 
+    private String categoryName;
+
     public Specification<Brand> getSpecification() {
         return new Specification<Brand>() {
             private static final long serialVersionUID = 1L;

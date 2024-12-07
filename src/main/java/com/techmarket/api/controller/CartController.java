@@ -64,6 +64,7 @@ public class CartController extends ABasicController{
             return apiMessageDto;
         }
         Cart cart = cartRepository.findCartByUserId(user.getId());
+        System.out.println(cart.getId());
         if (cart==null)
         {
             Cart newCart = new Cart();
@@ -76,7 +77,7 @@ public class CartController extends ABasicController{
         List<CartDetailDto> cartDetailDtoList = cartDetailMapper.fromEntityToListCartDetailDto(cartDetails);
         for (CartDetailDto item : cartDetailDtoList)
         {
-            ProductVariant productVariant = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
+            ProductVariant productVariant = productVariantRepository.findById(item.getVariantId()).orElse(null);
             if (productVariant==null)
             {
                 throw new RuntimeException("not found product");

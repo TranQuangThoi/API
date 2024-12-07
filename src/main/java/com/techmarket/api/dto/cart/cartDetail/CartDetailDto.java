@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class CartDetailDto extends ABasicAdminDto {
 
-    private Long productVariantId;
+    private Long variantId;
     private Double price;
     private String color;
     private String image;

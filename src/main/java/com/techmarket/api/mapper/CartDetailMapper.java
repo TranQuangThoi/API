@@ -12,7 +12,7 @@ public interface CartDetailMapper {
     @Mapping(source = "id",target = "cartDetailId")
     @Mapping(source = "productVariant.product.name",target = "productName")
     @Mapping(source = "quantity",target = "quantity" )
-    @Mapping(source = "productVariant.id",target = "productVariantId")
+    @Mapping(source = "productVariant.id",target = "variantId")
     @Mapping(source = "productVariant.price",target = "price")
     @Mapping(source = "productVariant.color",target = "color")
 //    @Mapping(source = "productVariant.image",target = "image")

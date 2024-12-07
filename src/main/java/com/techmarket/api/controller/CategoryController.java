@@ -63,6 +63,17 @@ public class CategoryController extends ABasicController {
         return  apiMessageDto;
     }
 
+    @GetMapping(value = "/list_category_by_brand/{brandId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<CategoryDto>> listCategoryByBrand(@PathVariable("brandId") Long brandId,@Valid CategoryCriteria categoryCriteria, Pageable pageable) {
+        ApiMessageDto<ResponseListDto<CategoryDto>> apiMessageDto = new ApiMessageDto<>();
+
+        Page<Category> serviceCategories = categoryRepository.listCategoryByBrandId(brandId,pageable);
+        ResponseListDto<CategoryDto> responseListDto = new ResponseListDto(categoryMapper.fromEntityToDtoList(serviceCategories.getContent()),serviceCategories.getTotalElements(), serviceCategories.getTotalPages());
+        apiMessageDto.setData(responseListDto);
+        apiMessageDto.setMessage("Get category for brand success");
+        return  apiMessageDto;
+    }
+
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('CA_V')")
     public ApiMessageDto<CategoryDto> getCategory(@PathVariable("id") Long id) {
