@@ -10,6 +10,8 @@ import com.techmarket.api.dto.ResponseListDto;
 import com.techmarket.api.dto.cart.CartDto;
 import com.techmarket.api.dto.order.CreateOrderDto;
 import com.techmarket.api.dto.order.OrderDto;
+import com.techmarket.api.dto.order.OrderStateDto;
+import com.techmarket.api.dto.revenue.RevenueOfYearDto;
 import com.techmarket.api.exception.UnauthorizationException;
 import com.techmarket.api.form.order.*;
 import com.techmarket.api.mapper.OrderMapper;
@@ -159,7 +161,7 @@ public class OrderController extends ABasicController{
             orderService.canelOrder(updateOrder.getId());
             orderRepository.save(order);
         }
-        if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED) && order.getPaymentMethod().equals(UserBaseConstant.PAYMENT_KIND_BANK_TRANFER))
+        if (updateOrder.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED))
         {
             if (!order.getIsPaid())
             {
@@ -311,7 +313,9 @@ public class OrderController extends ABasicController{
                 }
                 order.setUser(user);
                 Cart cart = cartRepository.findCartByUserId(user.getId());
-                cartDetailRepository.deleteAllByCartId(cart.getId());
+                if(cart!=null) {
+                    cartDetailRepository.deleteAllByCartId(cart.getId());
+                }
             }
 
         }
@@ -374,6 +378,16 @@ public class OrderController extends ABasicController{
         return apiMessageDto;
     }
 
+    @GetMapping(value = "count-state-order", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<List<OrderStateDto>> countStateOrder() {
+
+        ApiMessageDto<List<OrderStateDto>> apiMessageDto= new ApiMessageDto<>();
+        List<OrderStateDto> list= orderRepository.countOrdersByState();
+        apiMessageDto.setData(list);
+        apiMessageDto.setMessage("get count by state success");
+
+        return apiMessageDto;
+    }
     private void calculatePoint(Double price , User user)
     {
         Map<Double, Integer> pointsMapping = new HashMap<>();

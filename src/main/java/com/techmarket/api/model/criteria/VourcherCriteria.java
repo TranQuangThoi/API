@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -18,7 +19,7 @@ public class VourcherCriteria {
     private String title;
     private String content;
     private String percent;
-    private Integer expired;
+    private Date expired;
     private Integer kind;
     private Integer status;
 
@@ -56,7 +57,7 @@ public class VourcherCriteria {
                 }
                 if(getExpired()!=null)
                 {
-                    predicates.add(cb.equal(root.get("expired"),getExpired()));
+                    predicates.add(cb.equal(cb.function("date", Date.class, root.get("expired")), getExpired()));
                 }
 
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));

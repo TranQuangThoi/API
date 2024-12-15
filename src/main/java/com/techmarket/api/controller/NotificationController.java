@@ -39,7 +39,6 @@ public class NotificationController extends ABasicController{
     private UserRepository userRepository;
 
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NT_D')")
     public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         Notification notification = notificationRepository.findById(id).orElse(null);
@@ -55,7 +54,6 @@ public class NotificationController extends ABasicController{
     }
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NT_L')")
     public ApiMessageDto<ResponseListDto<List<NotificationDto>>> list(NotificationCriteria notificationCriteria, Pageable pageable) {
 
         ApiMessageDto<ResponseListDto<List<NotificationDto>>> apiMessageDto = new ApiMessageDto<>();
@@ -70,7 +68,6 @@ public class NotificationController extends ABasicController{
         return apiMessageDto;
     }
     @PutMapping(value = "/read-all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NT_RA')")
     public ApiMessageDto<String> readAll() {
 
         Long accountId = getCurrentUser();
@@ -83,7 +80,6 @@ public class NotificationController extends ABasicController{
         return apiMessageDto;
     }
     @DeleteMapping(value = "/delete-all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NT_DA')")
     public ApiMessageDto<String> deleteAll() {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         Long accountId = getCurrentUser();
@@ -117,7 +113,6 @@ public class NotificationController extends ABasicController{
         return apiMessageDto;
     }
     @PutMapping(value = "/change-state", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NT_CS')")
     public ApiMessageDto<String> changeState(@Valid @RequestBody ChangeStateNotification changeStateNotification, BindingResult bindingResult) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         Notification notification = notificationRepository.findById(changeStateNotification.getId()).orElse(null);
@@ -138,7 +133,6 @@ public class NotificationController extends ABasicController{
         return apiMessageDto;
     }
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NT_V')")
     public ApiMessageDto<NotificationDto> getNotification(@PathVariable("id") Long id) {
         ApiMessageDto<NotificationDto> apiMessageDto = new ApiMessageDto<>();
         Notification notification = notificationRepository.findById(id).orElse(null);

@@ -3,6 +3,7 @@ package com.techmarket.api.service;
 
 import com.techmarket.api.constant.UserBaseConstant;
 import com.techmarket.api.controller.ABasicController;
+import com.techmarket.api.dto.ErrorCode;
 import com.techmarket.api.form.order.AddProductToOrder;
 import com.techmarket.api.form.order.CreateOrderForUser;
 import com.techmarket.api.form.order.CreateOrderForm;
@@ -31,6 +32,9 @@ public class OrderService extends ABasicController {
     private OrderRepository orderRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private UserRepository userRepository;
+
 
     public void canelOrder(Long orderId)
     {
@@ -91,6 +95,11 @@ public class OrderService extends ABasicController {
         }
     }
     public void createOrderforUser(CreateOrderForUser createOrderForm , Order order) throws MessagingException {
+
+            Long accountId = getCurrentUser();
+            User user = userRepository.findByAccountId(accountId).orElse(null);
+
+
         Double totalPrice=0.0;
         for (AddProductToOrder item : createOrderForm.getListOrderProduct())
         {
@@ -121,6 +130,9 @@ public class OrderService extends ABasicController {
         if (createOrderForm.getVoucherId()!=null)
         {
             handleVoucher(createOrderForm.getVoucherId(),order,totalPrice);
+            Voucher voucher = voucherRepository.findById(createOrderForm.getVoucherId()).orElse(null);
+            voucher.setIs_used((List<User>) user);
+            voucherRepository.save(voucher);
         }
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);

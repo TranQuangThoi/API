@@ -1,14 +1,13 @@
 package com.techmarket.api.model.criteria;
 
 import com.techmarket.api.model.Brand;
+import com.techmarket.api.model.Category;
+import com.techmarket.api.model.Product;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +39,17 @@ public class BrandCriteria {
                 {
                     predicates.add(cb.like(cb.lower(root.get("name")),"%"+ getName()+"%"));
                 }
+                if (getCategoryName() != null) {
+                    Subquery<Long> subquery = query.subquery(Long.class);
+                    Root<Product> productRoot = subquery.from(Product.class);
+                    Join<Product, Category> categoryJoin = productRoot.join("category");
 
+
+                    subquery.select(productRoot.get("brand").get("id"))
+                            .where(cb.like(cb.lower(categoryJoin.get("name")), "%" + getCategoryName().toLowerCase() + "%"));
+
+                    predicates.add(cb.in(root.get("id")).value(subquery));
+                }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }
         };

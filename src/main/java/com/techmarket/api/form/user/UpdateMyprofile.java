@@ -22,10 +22,6 @@ public class UpdateMyprofile {
     private String email;
     @ApiModelProperty(name = "birthday")
     private Date birthday;
-    @ApiModelProperty(name = "newPassword")
-    private String newPassword;
-    @ApiModelProperty(name = "oldPassword")
-    private String oldPassword;
     @ApiModelProperty(name = "avatarPath")
     private String avatarPath;
     @ApiModelProperty(name = "gender")

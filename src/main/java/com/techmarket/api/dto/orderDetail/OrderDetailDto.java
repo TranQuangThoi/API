@@ -14,4 +14,5 @@ public class OrderDetailDto {
     private Double price;
     private String image;
     private Long productId;
+    private Boolean isReviewed;
 }

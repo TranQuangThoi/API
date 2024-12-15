@@ -25,6 +25,7 @@ public class OrderCriteria {
     private Integer state;
     private String orderCode;
     private Date createDate;
+    private Boolean isPaid;
 
     public Specification<Order> getCriteria() {
         return new Specification<Order>() {
@@ -35,7 +36,9 @@ public class OrderCriteria {
                 if(getId() != null){
                     predicates.add(cb.equal(root.get("id"), getId()));
                 }
-
+                if(getIsPaid() != null){
+                    predicates.add(cb.equal(root.get("isPaid"), getIsPaid()));
+                }
                 if(getUserId() != null){
                     predicates.add(cb.equal(root.get("user").get("id"), getUserId()));
                 }

@@ -1,5 +1,6 @@
 package com.techmarket.api.repository;
 
+import com.techmarket.api.dto.order.OrderStateDto;
 import com.techmarket.api.dto.revenue.RevenueDto;
 import com.techmarket.api.dto.revenue.RevenueOfYearDto;
 import com.techmarket.api.model.Order;
@@ -41,4 +42,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     Order findOrderByOrderCode(String orderCode);
 
     Integer countOrderByUserIdAndState(Long id,Integer state);
+
+    @Query("SELECT new com.techmarket.api.dto.order.OrderStateDto(o.state, COUNT(o)) " +
+            "FROM Order o " +
+            "GROUP BY o.state")
+    List<OrderStateDto> countOrdersByState();
 }

@@ -353,7 +353,41 @@ public class UserController extends ABasicController{
         apiMessageDto.setMessage("update success");
         return apiMessageDto;
     }
+    @PutMapping(value = "/update-my-pass-word", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> updatePassWord(@Valid @RequestBody UpdatePasswordForm updatePasswordForm , BindingResult bindingResult)
+    {
+        Long accountId = getCurrentUser();
 
+        ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account==null)
+        {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage("Not found this account");
+            apiMessageDto.setCode(ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+            return apiMessageDto;
+        }
+
+        if(updatePasswordForm.getOldPassword()!=null)
+        {
+            if (!passwordEncoder.matches(updatePasswordForm.getOldPassword(),account.getPassword()))
+            {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("password is incorrect");
+                apiMessageDto.setCode(ErrorCode.USER_ERROR_WRONG_PASSWORD);
+                return apiMessageDto;
+            }
+            if (StringUtils.isNoneBlank(updatePasswordForm.getNewPassword()))
+            {
+                account.setPassword(passwordEncoder.encode(updatePasswordForm.getNewPassword()));
+            }
+        }
+
+        accountRepository.save(account);
+        apiMessageDto.setMessage("Update password success");
+        return apiMessageDto;
+
+    }
     @PutMapping(value = "/update-profile", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> updateProfile(@Valid @RequestBody UpdateMyprofile updateMyprofile , BindingResult bindingResult)
     {
@@ -393,20 +427,7 @@ public class UserController extends ABasicController{
                 return apiMessageDto;
             }
         }
-        if(updateMyprofile.getOldPassword()!=null)
-        {
-            if (!passwordEncoder.matches(updateMyprofile.getOldPassword(),account.getPassword()))
-            {
-                apiMessageDto.setResult(false);
-                apiMessageDto.setMessage("password is incorrect");
-                apiMessageDto.setCode(ErrorCode.USER_ERROR_WRONG_PASSWORD);
-                return apiMessageDto;
-            }
-            if (StringUtils.isNoneBlank(updateMyprofile.getNewPassword()))
-            {
-                account.setPassword(passwordEncoder.encode(updateMyprofile.getNewPassword()));
-            }
-        }
+
 
         if (updateMyprofile.getBirthday()!=null)
         {

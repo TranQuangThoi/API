@@ -21,7 +21,8 @@ public class PaymentKindValidation  implements ConstraintValidator<PaymentKind,I
             return false;
         }
         if(!Objects.equals(kind, UserBaseConstant.PAYMENT_KIND_CASH) &&
-                !Objects.equals(kind, UserBaseConstant.PAYMENT_KIND_BANK_TRANFER)) {
+                !Objects.equals(kind, UserBaseConstant.PAYMENT_KIND_BANK_TRANFER)&&
+                !Objects.equals(kind, UserBaseConstant.PAYMENT_KIND_VNPAY)) {
             return false;
         }
         return true;

@@ -166,7 +166,7 @@ public class VoucherController extends ABasicController{
             apiMessageDto.setCode(ErrorCode.USER_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-        List<Voucher> listMyVocher = voucherRepository.findByKinds(UserBaseConstant.STATUS_ACTIVE , Arrays.asList(UserBaseConstant.VOUCHER_KIND_ALL,user.getMemberShip()));
+        List<Voucher> listMyVocher = voucherRepository.findByKinds(UserBaseConstant.STATUS_ACTIVE , Arrays.asList(UserBaseConstant.VOUCHER_KIND_ALL,user.getMemberShip()),user.getId());
         List<VoucherDto> voucherDtoList = voucherMapper.fromEntityListToDtoList(listMyVocher);
 
         apiMessageDto.setData(voucherDtoList);
@@ -176,7 +176,7 @@ public class VoucherController extends ABasicController{
     @GetMapping(value = "/get-voucher-for-guest", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<List<VoucherDto>> getForMyGuest() {
         ApiMessageDto<List<VoucherDto>> apiMessageDto = new ApiMessageDto<>();
-        List<Voucher> listMyVocher = voucherRepository.findByKinds(UserBaseConstant.STATUS_ACTIVE , Arrays.asList(UserBaseConstant.VOUCHER_KIND_ALL));
+        List<Voucher> listMyVocher = voucherRepository.findByKindsforguest(UserBaseConstant.STATUS_ACTIVE , Arrays.asList(UserBaseConstant.VOUCHER_KIND_ALL));
         List<VoucherDto> voucherDtoList = voucherMapper.fromEntityListToDtoList(listMyVocher);
 
         apiMessageDto.setData(voucherDtoList);
