@@ -52,6 +52,8 @@ public class ProductController extends ABasicController{
     private CartRepository cartRepository;
     @Autowired
     private CartDetailRepository cartDetailRepository;
+    @Autowired
+    private ImageRepository imageRepository;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('PR_L')")
@@ -340,10 +342,12 @@ public class ProductController extends ABasicController{
         {
             cartDetailRepository.deleteAllByProductVariantId(item.getId());
         }
+        imageRepository.deleteAllByProductVariants(productList);
         product.getRelatedProducts().clear();
         productRepository.save(product);
         cartDetailRepository.deleteAllByProduct(product.getId());
         reviewRepository.deleteAllByProductId(id);
+
         productVariantRepository.deleteAllByProductId(id);
         productRepository.delete(product);
         apiMessageDto.setMessage("Delete product success");

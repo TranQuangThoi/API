@@ -3,8 +3,7 @@ package com.techmarket.api.exportFile;
 import com.techmarket.api.constant.UserBaseConstant;
 import com.techmarket.api.model.Order;
 import com.techmarket.api.repository.OrderRepository;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +21,22 @@ public class OrderExcelExporter extends ReportAbstract{
         // data
         List<Order> list = (List<Order>) data;
         // font style content
+
+        Font font = workbook.createFont();
+        font.setFontName("Arial"); // Font chữ
+        font.setFontHeightInPoints((short) 12);
+
+
         CellStyle style = getFontContentExcel();
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.LEFT);
+
+
+        CellStyle currencyStyle = workbook.createCellStyle();
+        currencyStyle.setFont(font);
+        currencyStyle.setAlignment(HorizontalAlignment.RIGHT);  // Căn phải cho tiền tệ
+        DataFormat format = workbook.createDataFormat();
+        currencyStyle.setDataFormat(format.getFormat("₫#,##0"));
 
         // starting write on row
         int startRow = 2;
@@ -36,7 +50,7 @@ public class OrderExcelExporter extends ReportAbstract{
             createCell(row, columnCount++, order.getCreatedBy(), style);
             createCell(row,columnCount++,dateFormat.format(order.getCreatedDate()),style);
             createCell(row, columnCount++, order.getReceiver(), style);
-            createCell(row, columnCount++, order.getTotalMoney(), style);
+            createCell(row, columnCount++, order.getTotalMoney(), currencyStyle);
             createCell(row, columnCount++, order.getPhone(), style);
             createCell(row, columnCount++, order.getEmail(), style);
             createCell(row, columnCount++, order.getAddress(), style);
@@ -72,7 +86,7 @@ public class OrderExcelExporter extends ReportAbstract{
 
 
         // write sheet, title & header
-        String[] headers = new String[]{"No", "Code","Create By","Create Date", "Reciver", "Total Money", "Phone", "Email", "Address", "Province", "District", "Ward", "Payment Method","Payment Status"};
+        String[] headers = new String[]{"No", "Code","Create By","Create Date", "Receiver", "Total Money", "Phone", "Email", "Address", "Province", "District", "Ward", "Payment Method","Payment Status"};
         writeTableHeaderExcel("Sheet Order", "Report Order", headers);
 
         // write content row

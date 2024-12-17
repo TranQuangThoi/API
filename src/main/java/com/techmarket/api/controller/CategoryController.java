@@ -13,10 +13,7 @@ import com.techmarket.api.model.Category;
 import com.techmarket.api.model.Product;
 import com.techmarket.api.model.ProductVariant;
 import com.techmarket.api.model.criteria.CategoryCriteria;
-import com.techmarket.api.repository.CategoryRepository;
-import com.techmarket.api.repository.NewsRepository;
-import com.techmarket.api.repository.ProductRepository;
-import com.techmarket.api.repository.ProductVariantRepository;
+import com.techmarket.api.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +46,10 @@ public class CategoryController extends ABasicController {
     private ProductRepository productRepository;
     @Autowired
     private ProductVariantRepository productVariantRepository;
+    @Autowired
+    private ImageRepository imageRepository;
+
+
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -101,15 +102,12 @@ public class CategoryController extends ABasicController {
             apiMessageDto.setCode(ErrorCode.CATEGORY_ERROR_NOT_FOUND);
             return apiMessageDto;
         }
-
-        if (category.getKind().equals(UserBaseConstant.CATEGORY_KIND_PRODUCT))
-        {
-            List<Product> productList = productRepository.findAllByCategoryId(id);
-            for (Product item : productList)
+        List<Product> productList = productRepository.findAllByCategoryId(id);
+        for (Product item : productList)
             {
                 productVariantRepository.deleteAllByProductId(item.getId());
+                imageRepository.deleteAllByProductId(item.getId());
             }
-        }
         productRepository.deleteAllByCategoryId(id);
 
         newsRepository.deleteAllByCategoryId(id);

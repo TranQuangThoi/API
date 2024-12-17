@@ -405,7 +405,7 @@ public class UserController extends ABasicController{
         }
         User user = userRepository.findByAccountId(accountId).orElse(null);
 
-        if (!account.getPhone().equalsIgnoreCase(updateMyprofile.getPhone()))
+        if ( updateMyprofile.getPhone()!=null && account.getPhone()!= null && !account.getPhone().equalsIgnoreCase(updateMyprofile.getPhone()) )
         {
             Account phoneExist = accountRepository.findAccountByPhone(updateMyprofile.getPhone());
             if (phoneExist!=null)
@@ -416,7 +416,7 @@ public class UserController extends ABasicController{
                 return apiMessageDto;
             }
         }
-        if (!account.getEmail().equalsIgnoreCase(updateMyprofile.getEmail()))
+        if (updateMyprofile.getEmail()!=null && account.getEmail()!=null && !account.getEmail().equalsIgnoreCase(updateMyprofile.getEmail())  )
         {
             Account emailExist = accountRepository.findAccountByEmail(updateMyprofile.getEmail());
             if (emailExist!=null)
@@ -427,6 +427,7 @@ public class UserController extends ABasicController{
                 return apiMessageDto;
             }
         }
+
 
 
         if (updateMyprofile.getBirthday()!=null)
