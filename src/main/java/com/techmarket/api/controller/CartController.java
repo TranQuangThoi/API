@@ -71,7 +71,15 @@ public class CartController extends ABasicController{
             newCart.setUser(user);
             cartRepository.save(newCart);
             cart = cartRepository.findCartByUserId(user.getId());
+        }else {
+           Integer countCardDetail= cartDetailRepository.countCartDetailByCartId(cart.getId());
+           if (countCardDetail != cart.getTotalProduct())
+           {
+               cart.setTotalProduct(countCardDetail);
+               cartRepository.save(cart);
+           }
         }
+
         List<CartDetail> cartDetails = cartDetailRepository.findAllByCartId(cart.getId());
         cartDto =cartMapper.fromEntityToDto(cart);
         List<CartDetailDto> cartDetailDtoList = cartDetailMapper.fromEntityToListCartDetailDto(cartDetails);

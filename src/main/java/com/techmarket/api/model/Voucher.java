@@ -23,6 +23,7 @@ public class Voucher extends Auditable<String>{
     private Date expired;
     private Integer kind;
     private Integer amount;
+    private Integer priceMax;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinTable(name = "voucher_is_used",
             joinColumns = @JoinColumn(name = "voucher_id", referencedColumnName = "id"),

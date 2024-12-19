@@ -9,7 +9,7 @@ public class ProductVariantDto extends ABasicAdminDto {
 
     private Double price;
     private String color;
-//    private String image;
+    private String image;
     private Integer totalStock;
     private Integer status;
 }

@@ -40,5 +40,7 @@ public class Order extends Auditable<String>{
     @Column(name = "Order_Code")
     private String orderCode;
     private String email;
-
+    private Double originalTotal;
+    private  Double totalPriceVoucher;
+    private Double totalPriceSaleOff;
 }

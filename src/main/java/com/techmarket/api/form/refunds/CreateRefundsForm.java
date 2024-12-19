@@ -14,7 +14,7 @@ public class CreateRefundsForm {
     @ApiModelProperty(name = "orderId", required = true)
     private Long orderId;
 
-    @ApiModelProperty(name = "cash", required = true)
+    @ApiModelProperty(name = "cash")
     private Boolean cash;
 
     @ApiModelProperty(name = "bank")

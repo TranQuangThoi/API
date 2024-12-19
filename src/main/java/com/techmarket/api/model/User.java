@@ -22,4 +22,5 @@ public class User extends Auditable<String>{
     private Account account;
     private Integer memberShip;
     private Integer point=0;
+    private Double totalSpent;
 }

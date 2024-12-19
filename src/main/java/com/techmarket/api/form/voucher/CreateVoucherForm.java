@@ -31,5 +31,8 @@ public class CreateVoucherForm {
     @NotNull(message = "amount cant not be null")
     @ApiModelProperty(name = "amount", required = true)
     private Integer amount;
+    @NotNull(message = "max discount cant not be null")
+    @ApiModelProperty(name = "priceMax", required = true)
+    private Integer priceMax;
 
 }

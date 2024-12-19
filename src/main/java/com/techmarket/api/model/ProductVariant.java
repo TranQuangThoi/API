@@ -21,4 +21,5 @@ public class ProductVariant extends Auditable<String>{
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+    private String image;
 }

@@ -19,6 +19,7 @@ public interface UserMapper {
     @Mapping(source = "gender",target = "gender")
     @Mapping(source = "memberShip",target = "memberShip")
     @Mapping(source = "point",target = "point")
+    @Mapping(source = "totalSpent",target = "totalSpent")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromUserToUserDto")
     UserDto fromEntityToUserDto(User user);

@@ -16,5 +16,6 @@ public class UserDto extends ABasicAdminDto {
     private Integer gender;
     private Integer point;
     private Integer memberShip;
+    private Double totalSpent;
 
 }

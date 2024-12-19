@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 
 import javax.mail.MessagingException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -54,6 +55,8 @@ public class OrderService extends ABasicController {
 
     public void createOrder(CreateOrderForm createOrderForm , Order order) throws MessagingException {
         Double totalPrice=0.0;
+        Double totalOriganal =0.0;
+        Double totalPriceSale =0.0;
         for (AddProductToOrder item : createOrderForm.getListOrderProduct())
         {
             Double totalPrice1Pro =0.0;
@@ -70,7 +73,7 @@ public class OrderService extends ABasicController {
             {
                 totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
                 totalPrice1Pro += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
-
+                totalPriceSale += totalPrice1Pro;
 
             }else {
                 totalPrice += productVariantCheck.getPrice()* item.getQuantity();
@@ -78,12 +81,15 @@ public class OrderService extends ABasicController {
             }
             handleOrder(productVariantCheck,item,orderDetail,totalPrice1Pro);
             item.setPrice(totalPrice);
+            totalOriganal += productVariantCheck.getPrice()*item.getQuantity();
 
         }
         if (createOrderForm.getVoucherId()!=null)
         {
            handleVoucher(createOrderForm.getVoucherId(),order,totalPrice);
         }
+        order.setOriginalTotal(totalOriganal);
+        order.setTotalPriceSaleOff(totalPriceSale);
         order.setTotalMoney(totalPrice);
         orderRepository.save(order);
         if (createOrderForm.getEmail()!=null)
@@ -101,6 +107,9 @@ public class OrderService extends ABasicController {
 
 
         Double totalPrice=0.0;
+        Double totalOriganal =0.0;
+        Double totalPriceSale =0.0;
+
         for (AddProductToOrder item : createOrderForm.getListOrderProduct())
         {
             Double totalPrice1Pro =0.0;
@@ -117,6 +126,7 @@ public class OrderService extends ABasicController {
             {
                 totalPrice += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
                 totalPrice1Pro += (productVariantCheck.getPrice()-(productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
+                totalPriceSale += ((productVariantCheck.getPrice()*product.getSaleOff())/100)*item.getQuantity();
 
             }else {
                 totalPrice += productVariantCheck.getPrice()* item.getQuantity();
@@ -124,17 +134,26 @@ public class OrderService extends ABasicController {
 
             }
             handleOrder(productVariantCheck,item,orderDetail,totalPrice1Pro);
+            totalOriganal += productVariantCheck.getPrice()*item.getQuantity();
 
 
         }
+        order.setOriginalTotal(totalOriganal);
+        order.setTotalPriceSaleOff(totalPriceSale);
+        Double totalPriceAfter = 0.0;
         if (createOrderForm.getVoucherId()!=null)
         {
-            handleVoucher(createOrderForm.getVoucherId(),order,totalPrice);
+             totalPriceAfter = handleVoucher(createOrderForm.getVoucherId(),order,totalPrice);
             Voucher voucher = voucherRepository.findById(createOrderForm.getVoucherId()).orElse(null);
-            voucher.setIs_used((List<User>) user);
+            List<User> users  = new ArrayList<>();
+            users.add(user);
+            voucher.setIs_used(users);
             voucherRepository.save(voucher);
+            order.setTotalMoney(totalPriceAfter);
+        }else{
+            order.setTotalMoney(totalPrice);
         }
-        order.setTotalMoney(totalPrice);
+
         orderRepository.save(order);
         if (createOrderForm.getEmail()!=null)
         {
@@ -153,7 +172,7 @@ public class OrderService extends ABasicController {
         orderDetail.setColor(productVariantInStock.getColor());
         orderDetail.setName(productVariantInStock.getProduct().getName());
         orderDetail.setProduct_Id(productVariantInStock.getProduct().getId());
-//        orderDetail.setImage(productVariantInStock.getImage());
+        orderDetail.setImage(productVariantInStock.getImage());
         orderDetailRepository.save(orderDetail);
 
         productVariantInStock.setTotalStock(productVariantInStock.getTotalStock() -addProductToOrder.getQuantity());
@@ -169,11 +188,21 @@ public class OrderService extends ABasicController {
         Voucher voucher = voucherRepository.findById(voucherId).orElse(null);
         if (voucher.getAmount() != null && !voucher.getAmount().equals(Integer.valueOf(0)))
         {
+            Double totalDiscount = ((double)voucher.getPercent()*totalPrice)/100;
+
+            if(totalDiscount > voucher.getPriceMax())
+            {
+                totalDiscount = (double)voucher.getPriceMax();
+
+            }
+
             order.setVoucherId(voucherId);
+            order.setTotalPriceVoucher(totalDiscount);
+            orderRepository.save(order);
             voucher.setAmount(voucher.getAmount()-1);
             voucherRepository.save(voucher);
+            totalPrice = totalPrice - totalDiscount;
         }
-        totalPrice = totalPrice - (totalPrice*voucher.getPercent())/100;
         return totalPrice;
     }
 

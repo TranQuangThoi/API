@@ -67,6 +67,10 @@ public class OrderController extends ABasicController{
     private NotificationService notificationService;
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -140,6 +144,7 @@ public class OrderController extends ABasicController{
     public ApiMessageDto<String> updateOrder(@Valid @RequestBody UpdateOrder updateOrder ,BindingResult bindingResult) {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
 
+        System.out.println(updateOrder.getId() + "  : orderId  ");
         Order order = orderRepository.findById(updateOrder.getId()).orElse(null);
         Integer oldState = order.getState();
         if (order ==null)
@@ -170,6 +175,7 @@ public class OrderController extends ABasicController{
                 apiMessageDto.setCode(ErrorCode.ORDER_ERROR_NOT_PAID);
                 return apiMessageDto;
             }
+
         }
         orderMapper.fromUpdateToOrderEntity(updateOrder,order);
         orderRepository.save(order);
@@ -178,6 +184,7 @@ public class OrderController extends ABasicController{
             if (order.getState().equals(UserBaseConstant.ORDER_STATE_COMPLETED))
             {
                 calculatePoint(order.getTotalMoney(),order.getUser());
+
             }
         }
         if(!updateOrder.getState().equals(oldState))
@@ -276,6 +283,56 @@ public class OrderController extends ABasicController{
             }
 
         }
+        StringBuilder insufficientStockMessage = new StringBuilder();
+        boolean hasInsufficientStock = false;
+
+        for (AddProductToOrder item : createOrderForm.getListOrderProduct()) {
+            ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
+            if (productVariantCheck == null) {
+                apiMessageDto.setResult(false);
+                apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                return apiMessageDto;
+            }
+
+            if (item.getQuantity() > productVariantCheck.getTotalStock() && productVariantCheck.getTotalStock() != 0) {
+                hasInsufficientStock = true;
+                Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+                if (product == null) {
+                    apiMessageDto.setResult(false);
+                    apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                    apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+                    return apiMessageDto;
+                }
+
+                String nameProduct = product.getName();
+                insufficientStockMessage.append("Sản phẩm ").append(nameProduct)
+                        .append(" hiện chỉ còn ")
+                        .append(productVariantCheck.getTotalStock()).append(". ");
+            } else if (productVariantCheck.getTotalStock() == 0) {
+
+                hasInsufficientStock = true;
+                Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+                if (product == null) {
+                    apiMessageDto.setResult(false);
+                    apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                    apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+                    return apiMessageDto;
+                }
+
+                String nameProduct = product.getName();
+                insufficientStockMessage.append("Sản phẩm ").append(nameProduct)
+                        .append(" hiện tại đã hết hàng. ");
+
+            }
+        }
+
+        if (hasInsufficientStock) {
+            apiMessageDto.setResult(false);
+            apiMessageDto.setMessage(insufficientStockMessage.toString() + "Bạn có muốn tiếp tục thanh toán với các sản phẩm hiện có?");
+            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_EXIST);
+            return apiMessageDto;
+        }
         order.setOrderCode(userBaseOTPService.genCodeOrder(7));
         orderRepository.save(order);
         orderService.createOrder(createOrderForm,order);
@@ -313,9 +370,107 @@ public class OrderController extends ABasicController{
                 }
                 order.setUser(user);
                 Cart cart = cartRepository.findCartByUserId(user.getId());
-                if(cart!=null) {
+                if (cart != null) {
+                    StringBuilder insufficientStockMessage = new StringBuilder();
+                    boolean hasInsufficientStock = false;
+
+                    for (AddProductToOrder item : createOrderForUser.getListOrderProduct()) {
+                        ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
+                        if (productVariantCheck == null) {
+                            apiMessageDto.setResult(false);
+                            apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                            return apiMessageDto;
+                        }
+
+                        if (item.getQuantity() > productVariantCheck.getTotalStock() && productVariantCheck.getTotalStock() != 0) {
+                            hasInsufficientStock = true;
+                            Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+                            if (product == null) {
+                                apiMessageDto.setResult(false);
+                                apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                                apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+                                return apiMessageDto;
+                            }
+
+                            String nameProduct = product.getName();
+                            insufficientStockMessage.append("Sản phẩm ").append(nameProduct)
+                                    .append(" hiện chỉ còn ")
+                                    .append(productVariantCheck.getTotalStock()).append(". ");
+
+                            CartDetail cartDetail = cartDetailRepository.findByProductVariantIdAndCartId(productVariantCheck.getId(), cart.getId());
+                            if (cartDetail != null) {
+                                cartDetail.setQuantity(productVariantCheck.getTotalStock());
+                                cartDetailRepository.save(cartDetail);
+                            }
+
+                        } else if (productVariantCheck.getTotalStock() == 0) {
+                            hasInsufficientStock = true;
+                            Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+                            if (product == null) {
+                                apiMessageDto.setResult(false);
+                                apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                                apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+                                return apiMessageDto;
+                            }
+
+                            String nameProduct = product.getName();
+                            insufficientStockMessage.append("Sản phẩm ").append(nameProduct)
+                                    .append(" hiện tại đã hết hàng. ");
+
+                            CartDetail cartDetail = cartDetailRepository.findByProductVariantIdAndCartId(productVariantCheck.getId(), cart.getId());
+                            if (cartDetail != null) {
+                                cartDetailRepository.delete(cartDetail);
+                            }
+                        }
+                    }
+
+                    if (hasInsufficientStock) {
+                        apiMessageDto.setResult(false);
+                        apiMessageDto.setMessage(insufficientStockMessage.toString() + "Bạn có muốn tiếp tục thanh toán với các sản phẩm hiện có?");
+                        apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_EXIST);
+                        return apiMessageDto;
+                    }
+
                     cartDetailRepository.deleteAllByCartId(cart.getId());
+                } else {
+                    StringBuilder insufficientStockMessage = new StringBuilder();
+                    boolean hasInsufficientStock = false;
+
+                    for (AddProductToOrder item : createOrderForUser.getListOrderProduct()) {
+                        ProductVariant productVariantCheck = productVariantRepository.findById(item.getProductVariantId()).orElse(null);
+                        if (productVariantCheck == null) {
+                            apiMessageDto.setResult(false);
+                            apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                            apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_NOT_FOUND);
+                            return apiMessageDto;
+                        }
+
+                        if (item.getQuantity() > productVariantCheck.getTotalStock() || productVariantCheck.getTotalStock() == 0) {
+                            hasInsufficientStock = true;
+                            Product product = productRepository.findById(productVariantCheck.getProduct().getId()).orElse(null);
+                            if (product == null) {
+                                apiMessageDto.setResult(false);
+                                apiMessageDto.setMessage("Thao tác hiện đang bị lỗi.Vui lòng thục hiện lại");
+                                apiMessageDto.setCode(ErrorCode.PRODUCT_ERROR_NOT_FOUND);
+                                return apiMessageDto;
+                            }
+
+                            String nameProduct = product.getName();
+                            insufficientStockMessage.append("Sản phẩm ").append(nameProduct)
+                                    .append(" hiện chỉ còn ")
+                                    .append(productVariantCheck.getTotalStock()).append(". ");
+                        }
+                    }
+
+                    if (hasInsufficientStock) {
+                        apiMessageDto.setResult(false);
+                        apiMessageDto.setMessage(insufficientStockMessage.toString() + "Bạn có muốn tiếp tục thanh toán với các sản phẩm hiện có?");
+                        apiMessageDto.setCode(ErrorCode.PRODUCT_VARIANT_ERROR_EXIST);
+                        return apiMessageDto;
+                    }
                 }
+
             }
 
         }
@@ -411,23 +566,33 @@ public class OrderController extends ABasicController{
         Integer point = user.getPoint() + additionalPoints;
         user.setPoint(point);
         Integer membership = null;
-        if (user.getPoint() <=10)
+        Double totalSpentCustomer = user.getTotalSpent()+ price;
+
+        int totalSpentCustomerInt = (int) Math.ceil(totalSpentCustomer);
+
+        if (totalSpentCustomerInt <25000000 )
         {
             membership = UserBaseConstant.USER_KIND_NEW_MEMBERSHIP;
+
         }
-        else if (user.getPoint() <=40)
+        else if (totalSpentCustomerInt <60000000)
         {
             membership = UserBaseConstant.USER_KIND_SILVER_MEMBERSHIP;
-        }else if (user.getPoint() <=80)
+
+        }else if (totalSpentCustomerInt <120000000 )
         {
             membership = UserBaseConstant.USER_KIND_GOLD_MEMBERSHIP;
-        }else if (user.getPoint() <=140)
+
+        }else if (totalSpentCustomerInt < 200000000)
         {
             membership = UserBaseConstant.USER_KIND_DIAMOND_MEMEBERSHIP;
-        }else if (user.getPoint() <=200)
+
+        }else if (totalSpentCustomerInt > 200000000)
         {
             membership = UserBaseConstant.USER_KIND_VIP_MEMEBERSHIP;
+
         }
+        user.setTotalSpent(totalSpentCustomer);
         user.setMemberShip(membership);
         userRepository.save(user);
     }

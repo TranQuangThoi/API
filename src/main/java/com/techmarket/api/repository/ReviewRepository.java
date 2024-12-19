@@ -29,8 +29,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecif
     @Transactional
     void deleteAllByUserId(Long id);
 
-    @Query("SELECT AVG(rv.star) from Review rv where rv.product.id = :productId")
+    @Query("SELECT ROUND(AVG(rv.star), 1) FROM Review rv WHERE rv.product.id = :productId")
     Double avgStartOfProduct(@Param("productId") Long productId);
+
     @Query("SELECT count (rv) from Review rv where rv.product.id = :productId")
     Long countReviewOfProduct(@Param("productId") Long productId);
     @Query("SELECT new com.techmarket.api.dto.review.CountForEachStart(r.star, COUNT(r)) FROM Review r WHERE r.product.id = :productId GROUP BY r.star")

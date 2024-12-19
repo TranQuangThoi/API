@@ -25,6 +25,8 @@ public class CreateProductVariantForm {
     private Integer status;
     @ApiModelProperty(name = "productId",required = true)
     private Long productId;
+    @ApiModelProperty(name = "image")
+    private String image;
     @NotNull(message = "filePath is required")
     @ApiModelProperty(name = "filePath", required = true)
     List<String> file;

@@ -23,6 +23,9 @@ public class OrderDto extends ABasicAdminDto {
     private Integer state;
     private Long voucherId;
     private String orderCode;
+    private Double originalTotal;
+    private  Double totalPriceVoucher;
+    private Double totalPriceSaleOff;
 
 
 }

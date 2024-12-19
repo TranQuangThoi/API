@@ -16,5 +16,6 @@ public class VoucherDto extends ABasicAdminDto {
     private Date expired;
     private Integer kind;
     private Integer amount;
+    private Integer priceMax;
 
 }

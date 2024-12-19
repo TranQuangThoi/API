@@ -124,8 +124,8 @@ public class TransactionController extends ABasicController{
         return apiMessageDto;
     }
 
-    @GetMapping("/vn-pay")
-    public ApiMessageDto<VNPAYDto> pay(HttpServletRequest request,@Valid @RequestBody CreatePaymentForm createPaymentForm) {
+    @PostMapping("/vn-pay")
+    public ApiMessageDto<VNPAYDto> pay(HttpServletRequest request,@RequestBody CreatePaymentForm createPaymentForm) {
         Order order = orderRepository.findById(createPaymentForm.getOrderId()).orElse(null);
         ApiMessageDto<VNPAYDto> apiResponse = new ApiMessageDto<>();
         if (order==null)

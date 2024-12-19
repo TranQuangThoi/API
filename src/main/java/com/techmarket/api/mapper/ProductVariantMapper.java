@@ -15,7 +15,7 @@ import java.util.List;
 public interface ProductVariantMapper {
     @Mapping(source = "price", target = "price")
     @Mapping(source = "color", target = "color")
-//    @Mapping(source = "image", target = "image")
+    @Mapping(source = "image", target = "image")
     @Mapping(source = "status",target = "status")
     @Mapping(source = "totalStock",target = "totalStock")
     @Named("toProductVariantEntity")
@@ -28,7 +28,7 @@ public interface ProductVariantMapper {
     @Mapping(source = "modifiedDate", target = "modifiedDate")
     @Mapping(source = "createdDate", target = "createdDate")
     @Mapping(source = "id", target = "id")
-//    @Mapping(source = "image", target = "image")
+   @Mapping(source = "image", target = "image")
     @Mapping(source = "color", target = "color")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "totalStock", target = "totalStock")
@@ -42,7 +42,7 @@ public interface ProductVariantMapper {
     List<ProductVariantDto> fromEntityToListProVariantDto(List<ProductVariant> productVariants);
 
     @Mapping(source = "id", target = "id")
-//    @Mapping(source = "image", target = "image")
+    @Mapping(source = "image", target = "image")
     @Mapping(source = "color", target = "color")
     @Mapping(source = "totalStock", target = "totalStock")
     @Mapping(source = "price",target = "price")
@@ -54,7 +54,7 @@ public interface ProductVariantMapper {
     @IterableMapping(elementTargetType = ProductVariantDto.class,qualifiedByName = "fromEntityToProVariantDtoAuto")
     List<ProductVariantDto> fromEntityToListProVariantAutoDto(List<ProductVariant> productVariants);
 
-//    @Mapping(source = "image", target = "image")
+    @Mapping(source = "image", target = "image")
     @Mapping(source = "price", target = "price")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "color", target = "color")
